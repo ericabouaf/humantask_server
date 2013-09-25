@@ -24,8 +24,8 @@ app.configure(function(){
 
 
 
-require('./app/controllers/api_controller.js')(app);
-require('./app/controllers/ui_controller.js')(app);
+require('./app/controllers/api_controller.js').controller(app);
+require('./app/controllers/ui_controller.js').controller(app);
 
 
 // start the server

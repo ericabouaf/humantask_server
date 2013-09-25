@@ -4,7 +4,7 @@ var nodemailer = require('nodemailer'),
 
 
 
-exports = function(app) {
+exports.controller = function(app) {
 
 
 
@@ -51,9 +51,9 @@ function sendNotification(notification, taskToken, config) {
 
 	   console.log("New task !");
 
-	   redisClient.set(taskToken, JSON.stringify(activity), function(err, results) {
+	   app.redisClient.set(taskToken, JSON.stringify(activity), function(err, results) {
 
-	      redisClient.rpush("open", taskToken, function(err, results) {      
+	      app.redisClient.rpush("open", taskToken, function(err, results) {      
 
 	         // Send email notification
 	         var input = JSON.parse(activity.input);

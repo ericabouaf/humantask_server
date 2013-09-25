@@ -5,7 +5,7 @@ var swf = require('aws-swf'),
     fs = require('fs'),
 	querystring = require('querystring');
 
-exports = function(app) {
+exports.controller = function(app) {
 
 
 
@@ -13,7 +13,7 @@ exports = function(app) {
 	// Get the task from redis
 	function taskFromToken(req, res, next) {
 
-	   redisClient.get( req.param('taskToken') , function(err, reply) {
+	   app.redisClient.get( req.param('taskToken') , function(err, reply) {
 
 	      if(!!err || reply === null) {
 	         res.render('error', { 
@@ -124,9 +124,9 @@ exports = function(app) {
 	         // LREM "open" 0 "acti2"
 
 	         
-	         redisClient.lrem('open', 0, req.param('taskToken') , function(err) {
+	         app.redisClient.lrem('open', 0, req.param('taskToken') , function(err) {
 
-	            redisClient.rpush('failed', req.param('taskToken') , function(err) {
+	            app.redisClient.rpush('failed', req.param('taskToken') , function(err) {
 	              
 	               res.render('error', { 
 	                  locals: { 
@@ -144,10 +144,10 @@ exports = function(app) {
 	      }
 	        
 	      // Delete the activity from the 'open' list
-	      redisClient.lrem('open', 0, req.param('taskToken') , function(err) {
+	      app.redisClient.lrem('open', 0, req.param('taskToken') , function(err) {
 	         if (err) { console.error(err); }
 
-	         redisClient.rpush('done', req.param('taskToken') , function(err) {
+	         app.redisClient.rpush('done', req.param('taskToken') , function(err) {
 
 	            if (err) { console.error(err); }
 	            res.redirect('/finished');
@@ -176,7 +176,7 @@ exports = function(app) {
 	app.get('/', function(req, res) {
 
 	   // List 25 activities
-	   redisClient.lrange('open', 0,25, function(err, results) {
+	   app.redisClient.lrange('open', 0,25, function(err, results) {
 
 	      var r = results.length + " results<br /><br />";
 	      results.forEach(function(key) {
