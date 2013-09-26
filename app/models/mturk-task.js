@@ -1,3 +1,28 @@
+
+var util = require('util'),
+    Task = require('./task').Task;
+
+
+
+/**
+ * MturkTask
+ */
+var MturkTask = exports.MturkTask = function(taskToken, config) {
+    Task.call(this, taskToken, config);
+};
+
+util.inherits(MturkTask, Task);
+
+
+MturkTask.prototype = {
+
+
+};
+
+
+
+
+
 /**
  * MTurk
  * https://github.com/jefftimesten/mturk
