@@ -1,13 +1,18 @@
 
-var Task = require('../app/models/task.js').Task;
+var MturkTask = require('../app/models/mturk-task.js').MturkTask;
 
-var t = new Task('1234567890', {
+var t = new MturkTask('1234567890', {
 
-   title : "Vote on Text Improvement",
-   description : "Decide which two small paragraphs is closer to a goal.",
-   reward : 0.01,
-   duration: 3600, // 1 hour
-   maxAssignments : 1,
+   type: 'mturk', // should be set automatically
+
+   mturk: {
+      title : "Vote on Text Improvement",
+      description : "Decide which two small paragraphs is closer to a goal.",
+      reward : 0.01,
+      duration: 3600, // 1 hour
+      maxAssignments : 1,
+      options: {}
+   },
 
    "email-notification": {
       to: "eric.abouaf@gmail.com",
@@ -33,5 +38,10 @@ var t = new Task('1234567890', {
 });
 
 t.save(function(err, results) {
-   console.log(err, results);
+
+   if(err) {
+      console.log("error !", err);
+      return;
+   }
+   console.log(results);
 });

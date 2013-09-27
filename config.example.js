@@ -13,24 +13,12 @@ exports.server = {
     host: 'localhost'
 };
 
-/*
 
-
-exports.url = "https://mechanicalturk.sandbox.amazonaws.com";
-
-exports.accessKeyId = "XXXX";
-
-exports.secretAccessKey = "XXXX";
-
-exports.poller = {
-   frequency_ms: 60000
+exports.mturk = {
+    "url": "https://mechanicalturk.sandbox.amazonaws.com",
+    "accessKeyId": "...",
+    "secretAccessKey": "...",
+    "region": "us-east-1",
+    receptor: { port: 8080, host: undefined },
+    poller: { frequency_ms: 60000 }
 };
-
-exports.receptor = { port: 8080, host: undefined };
-
-
-exports.s3 = {
-    region: 'us-east-1'
-};
-
-*/

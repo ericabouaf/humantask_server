@@ -69,7 +69,9 @@ app.get('/finished', function(req, res) {
 /**
  * Display an activity
  */
-app.get('/activity/:taskToken', taskFromToken, function(req, res) {
+
+
+function display_activity(req, res, layout) {
   
    if(!req.task) {
       res.render('unavailable', { 
@@ -78,10 +80,7 @@ app.get('/activity/:taskToken', taskFromToken, function(req, res) {
          }
       });
       return;
-   }
-
-   // TODO: check if task has not timed-out (should be "STARTED")
-  
+   }  
    
    var input = req.task.config;
      
@@ -92,7 +91,7 @@ app.get('/activity/:taskToken', taskFromToken, function(req, res) {
       var str = "";
       stream.on('data', function(data) { str += data; });
       stream.on('end', function() {
-         fs.readFile(__dirname+'/app/views/layout.ejs', 'utf-8', function(error, content) {
+         fs.readFile(__dirname+'/app/views/'+layout, 'utf-8', function(error, content) {
             res.set('Content-Type', 'text/html');
             var body = ejs.render(content, {
                body: str,
@@ -113,6 +112,13 @@ app.get('/activity/:taskToken', taskFromToken, function(req, res) {
       });
    }   
   
+}
+
+app.get('/activity/:taskToken', taskFromToken, function(req, res) {
+   display_activity(req, res, 'layout.ejs');
+});
+app.get('/mturk/:taskToken', taskFromToken, function(req, res) {
+   display_activity(req, res, 'mturk_layout.ejs');
 });
 
 
