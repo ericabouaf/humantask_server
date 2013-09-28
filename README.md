@@ -18,17 +18,27 @@ Two kinds of human activities are available :
 
 ## Example :
 
+Local Task :
+
+    {
+      type: 'local',
+      data: [{label: "this"},{label: "list"}, {label: "is"}, {label: "templated"}],
+      template: "HTML for this task. Use mustache templating with the data above."
+    }
+
+Mechanical Turk task :
+
     {
     	type: 'mturk',
     	mturk: {
         	title : "Vote on Text Improvement",
-          	description : "Decide which two small paragraphs is closer to a goal.",
-          	reward : 0.01,  // $
-          	duration: 3600, // 1 hour
-          	maxAssignments : 1
-        },
-        "data": [{label: "this"},{label: "list"}, {label: "is"}, {label: "templated"}],
-        template: "HTML for this task. Use mustache templating with the data above."
+         	description : "Decide which two small paragraphs is closer to a goal.",
+         	reward : 0.01,  // $
+         	duration: 3600, // 1 hour
+         	maxAssignments : 1
+      },
+      data: [{label: "this"},{label: "list"}, {label: "is"}, {label: "templated"}],
+      template: "HTML for this task. Use mustache templating with the data above."
     }
 
 This configuration must be sent by a SWF decider, encoded in JSON into the activity "input" field (limited to 65k)

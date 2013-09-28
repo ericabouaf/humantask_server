@@ -1,9 +1,11 @@
 
 var util = require('util'),
     Task = require('./task').Task,
+    config = require(__dirname + '/../../config.js'),
     nodemailer = require('nodemailer'),
     querystring = require('querystring');
 
+var smtpTransport = nodemailer.createTransport("SMTP", config.mailer_transport);
 
 /**
  * LocalTask
@@ -17,12 +19,18 @@ util.inherits(LocalTask, Task);
 
 LocalTask.prototype.save = function(cb) {
    var tt = this.taskToken;
+   var that = this;
    Task.redisClient.set(tt, JSON.stringify(this.config), function(err) {
       if(err) {
          cb(err);
          return;
       }
       Task.redisClient.rpush("open", tt, cb);
+
+      if(that.config.emailNotification) {
+        sendNotification(that.config.emailNotification, tt, config);
+      }
+
    });
 };
 
@@ -36,18 +44,8 @@ LocalTask.prototype.removeFromOpen = function(cb) {
   });
 };
 
-   // TODO: when to send notifications ?
-
-             // Send email notification
-             /*var input = JSON.parse(activity.input);
-             if(input["email-notification"]) {
-                sendNotification(input["email-notification"], taskToken, app.config);
-             }*/
-
-
 
 Task.registerType('local', LocalTask);
-
 
 
 /**
@@ -55,8 +53,6 @@ Task.registerType('local', LocalTask);
  */
 function sendNotification(notification, taskToken, config) {
 
-   var smtpTransport = nodemailer.createTransport("SMTP", config.mailer_transport);
-   
    var mailOptions = {
 
       from: notification.from || config.mailer_transport.auth.email,
@@ -71,31 +67,12 @@ function sendNotification(notification, taskToken, config) {
    // send mail with defined transport object
    smtpTransport.sendMail(mailOptions, function(error, response){
       if(error){
-         console.log(error);
+        console.log("Unable to send notification !");
+        console.log(error);
       } else {
-         console.log("HUMANTASK WORKER email notification sent: " + response.message);
+        console.log("HUMANTASK WORKER email notification sent: " + response.message);
       }
-      // if you don't want to use this transport object anymore, uncomment following line
-      smtpTransport.close(); // shut down the connection pool, no more messages
    });
 
 }
 
-
-
-
-            // TODO: delete task
-            // LREM "open" 0 "acti2"
-            /*redisClient.lrem('open', 0, req.param('taskToken') , function(err) {
-               redisClient.rpush('failed', req.param('taskToken') , function(err) {
-                 
-                  // TODO:
-                  cb();
-
-               });
-
-            });*/
-
-
-
-         

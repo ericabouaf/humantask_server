@@ -6,8 +6,8 @@ if( has_workflow_just_started() ) {
 
     input: {
 
-      //type: 'local',
-      type: 'mturk',
+      type: 'local',
+      //type: 'mturk',
 
        mturk: {
           title : "Vote on Text Improvement",
@@ -17,7 +17,7 @@ if( has_workflow_just_started() ) {
           maxAssignments : 1
         },
 
-        "email-notification": {
+        emailNotification: {
             to: "eric.abouaf@gmail.com",
             subject: "Ceci est un test !"
         },
