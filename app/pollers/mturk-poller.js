@@ -1,20 +1,31 @@
 
+var async = require('async'),
+    winston = require('winston'),
+    Task = require(__dirname + '/../models/task.js').Task,
+    MturkTask = require(__dirname + '/../models/mturk-task.js').MturkTask;
+
+var winston_prefix = "[Mturk Poller]";
+
 module.exports = function(config) {
 
-   var async = require('async'),
-       mturk = require('mturk')(config.mturk),
-       Task = require(__dirname + '/../models/task.js').Task,
-       MturkTask = require(__dirname + '/../models/mturk-task.js').MturkTask;
+   var mturk = require('mturk')(config.mturk);
 
-   // Process for one reviewable hitId
-   // Start the poller
+   winston.info(winston_prefix, "Start polling Mturk for reviewable HITs.");
+
+   /**
+    * HITReviewable handler
+    */
    mturk.on('HITReviewable', function (hitId) {
 
-      console.log('HIT with ID ' + hitId + ' HITReviewable');
+      winston.info(winston_prefix, "New reviewable HIT : "+hitId);
 
       // Retrieve the hit
       mturk.HIT.get(hitId, function(err, hit) {
-         if(err) { console.log(err); return; }
+         if(err) {
+            winston.error(winston_prefix, "Unable to get HIT "+hitId);
+            winston.error(winston_prefix, err);
+            return;
+         }
          processHit(hit);
       });
 
@@ -22,7 +33,9 @@ module.exports = function(config) {
 
 
 
-   // Process for one reviewable hit
+   /**
+    * Process for one reviewable HIT
+    */
    function processHit(hit) {
 
       // TaskToken
@@ -31,102 +44,130 @@ module.exports = function(config) {
          mturkShortToken = hit.requesterAnnotation.taskToken;
       }
       else {
-         console.log("Hit not associated to a taskToken. ignoring...");
+         winston.error(winston_prefix, "HIT without taskToken. Ignoring HIT.");
          return;
       }
 
       processSwfHit(hit, mturkShortToken);
    }
 
-
-
+   /**
+    * Process a valid SWF HIT
+    */
    function processSwfHit(hit, mturkShortToken) {
 
-      console.log(hit);
-
-      // maxAssignments
       var maxAssignments = parseInt(hit.maxAssignments, 10);
 
-
       // Get Assignements
-      console.log("Fetching assignments...");
+      winston.info(winston_prefix, "Fetching HIT assignments...");
       hit.getAssignments({}, function(err, numResults, totalNumResults, pageNumber, assignments) {
 
+         winston.info(winston_prefix, "Got assignements : ", numResults+" results", totalNumResults+" total results", "pageNumber: "+pageNumber);
+
          if(err) {
-            console.log("Unable to retrieve assignments !", err);
+            winston.error(winston_prefix, "Unable to retrieve HIT assignments");
+            winston.error(winston_prefix, err);
             return;
          }
 
-         if(totalNumResults == maxAssignments) {
-
-            // auto-approve all assignements with assignmentStatus === 'Submitted'
-            async.forEachSeries(assignments, function(assignment, cb) {
-               if(assignment.assignmentStatus === 'Submitted') {
-                  console.log("Approving assignment : ", assignment.id);
-                  assignment.approve("Thank you !", cb);
-               }
-               else {
-                  cb();
-               }
-            }, function(err) {
-                  
-                  console.log("Assignements approved !!");
-
-                  /**
-                   * Transforming the results from mturk
-                   */
-                  var results = [];
-                  assignments.forEach(function(assignment) {
-                     var r = {};
-                     assignment.answer.QuestionFormAnswers.Answer.forEach(function(mturkAnswer) {
-                        var key = mturkAnswer.QuestionIdentifier;
-                        var val = mturkAnswer.FreeText;
-                        r[key] = val;
-                     });
-                     results.push(r);
-                  });
-                  if(maxAssignments == 1) {
-                     results = results[0];
-                  }
-
-                  /**
-                   * Find the MturkTask object
-                   */
-                  console.log("loading task");
-                  MturkTask.findByShortToken(mturkShortToken, function(err, task) {
-
-                     if(!task) {
-                        // dispose hit:
-                        console.log("no task");
-                        console.log("dispose hit");
-                        mturk.HIT.dispose(hit.id, function() {
-                           console.log("done");
-                        });
-                        return;
-                     }
-
-                     console.log("Got task ! Mark as completed");
-
-                     // Mark task has completed
-                     task.respondCompleted(results, function(err) {
-
-                        // dispose hit:
-                        console.log("dispose hit");
-                        mturk.HIT.dispose(hit.id, function() {
-                           console.log("done");
-                        });
-                        
-                     });
-
-                  });
-
-            });
-
+         if(totalNumResults != maxAssignments) {
+            winston.info(winston_prefix, "Assignments not completed yet. Waiting for more. ("+totalNumResults+"/"+maxAssignments+") ");
+            return;
          }
 
+         // TODO: fetch ALL assignements if needed !
+
+         completeHit(hit, mturkShortToken, assignments);
 
      });
 
    }
+
+
+   /**
+    * When a HIT is fully completed
+    */
+   function completeHit(hit, mturkShortToken, assignments) {
+
+      var maxAssignments = parseInt(hit.maxAssignments, 10);
+
+      // auto-approve all assignements with assignmentStatus === 'Submitted'
+      async.forEachSeries(assignments, function(assignment, cb) {
+         if(assignment.assignmentStatus === 'Submitted') {
+            winston.info(winston_prefix, "Approving assignment "+assignment.id);
+            assignment.approve("Thank you !", cb);
+         }
+         else {
+            cb();
+         }
+      }, function(err) {
+            
+            winston.info(winston_prefix, "All assignements approved !");
+
+            // results
+            var results = getResultsFromAssignments(assignments);
+            if(maxAssignments == 1) {
+               results = results[0];
+            }
+
+            /**
+             * Find the MturkTask object
+             */
+            winston.info(winston_prefix, "Loading task...");
+            MturkTask.findByShortToken(mturkShortToken, function(err, task) {
+
+               if(!task) {
+                  winston.warn(winston_prefix, "Task not found ! Disposing HIT...");
+                  mturk.HIT.dispose(hit.id, function() {
+                     winston.info(winston_prefix, "HIT disposed.");
+                  });
+                  return;
+               }
+
+               winston.info(winston_prefix, "Got task. Sending results to SWF...");
+
+               // Mark task has completed
+               task.respondCompleted(results, function(err) {
+
+                  if(err) {
+                    winston.error(winston_prefix, "SWF respondCompleted failed");
+                    winston.error(winston_prefix, err);
+                    return;
+                  }
+
+                  winston.info(winston_prefix, "Results sent to SWF ! Disposing HIT...");
+
+                  mturk.HIT.dispose(hit.id, function() {
+                     winston.info(winston_prefix, "HIT disposed.");
+                  });
+                  
+               });
+
+            });
+
+      });
+
+   }
+
+
+   /**
+    * Transforming the results from Mturk
+    */
+   function getResultsFromAssignments(assignments) {
+      var results = [];
+      assignments.forEach(function(assignment) {
+         var r = {};
+         var a = assignment.answer.QuestionFormAnswers.Answer;
+         if(!Array.isArray(a)) {
+           a = [a];
+         }
+         a.forEach(function(mturkAnswer) {
+            r[mturkAnswer.QuestionIdentifier] = mturkAnswer.FreeText;
+         });
+         results.push(r);
+      });
+      return results;
+   }
+
 
 };

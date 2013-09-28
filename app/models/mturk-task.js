@@ -52,7 +52,7 @@ MturkTask.prototype.createHit = function (cb) {
 
         var options = {maxAssignments: mturkParams.maxAssignments || 1},
             lifeTimeInSeconds = 3600, // 1 hour
-            questionXML = MturkTask.externalUrlXml("http://localhost:3000/mturk/"+querystring.escape(that.taskToken), 800);
+            questionXML = MturkTask.externalUrlXml("http://"+config.server.host+":"+config.server.port+"/mturk/"+querystring.escape(that.taskToken), 800);
 
         mturk.HIT.create(hitType.id, questionXML, lifeTimeInSeconds, {
            requesterAnnotation: JSON.stringify({taskToken: mturkShortToken })

@@ -26,6 +26,16 @@ LocalTask.prototype.save = function(cb) {
    });
 };
 
+
+// Delete the activity from the 'open' list
+LocalTask.prototype.removeFromOpen = function(cb) {
+  var tt = this.taskToken;
+  Task.redisClient.lrem('open', 0, tt, function(err) {
+      if (err) { cb(err); return; }
+      Task.redisClient.rpush('done', tt , cb);
+  });
+};
+
    // TODO: when to send notifications ?
 
              // Send email notification
@@ -88,14 +98,4 @@ function sendNotification(notification, taskToken, config) {
 
 
 
-         // Delete the activity from the 'open' list
-         /*redisClient.lrem('open', 0, req.param('taskToken') , function(err) {
-            if (err) { console.error(err); }
-
-            redisClient.rpush('done', req.param('taskToken') , function(err) {
-
-               if (err) { console.error(err); }
-               res.redirect('/finished');
-
-            });
-         });*/
+         

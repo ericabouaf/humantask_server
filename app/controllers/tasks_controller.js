@@ -1,18 +1,19 @@
 var mu = require('mu2'),
     fs = require('fs'),
     ejs = require('ejs'),
+    winston = require('winston'),
     querystring = require('querystring'),
     Task = require('../models/task').Task,
     LocalTask = require('../models/local-task').LocalTask,
     MturkTask = require('../models/mturk-task').MturkTask;
+
+var winston_prefix = "[HTTP Server]";
 
 exports.controller = function(app) {
 
 
    // Get the task from redis
    function taskFromToken(req, res, next) {
-
-      console.log(req.param('taskToken')  );
 
       Task.find( req.param('taskToken') , function(err, task) {
 
@@ -105,13 +106,19 @@ exports.controller = function(app) {
 
 
    /**
-    * Webservices to complete or fail an activity task
+    * Webservices to complete a local task
     */
    app.post('/:taskToken/completed', taskFromToken, function(req, res){
-        
+      
+      winston.info(winston_prefix, "Got task. Sending results to SWF...");
+
       req.task.respondCompleted(req.body, function(err) {
 
          if(err) {
+
+            winston.error(winston_prefix, "SWF respondCompleted failed");
+            winston.error(winston_prefix, err);
+
             res.render('error', { 
                locals: { 
                   error: err,
@@ -121,6 +128,18 @@ exports.controller = function(app) {
             });
             return;
          }
+
+         winston.info(winston_prefix, "Results sent to SWF ! Marking local task as done...");
+
+         // mark local task as done !
+         req.task.removeFromOpen(function(err) {
+              if(err) {
+                winston.error(winston_prefix, "Unable to mark task as done !");
+                winston.error(winston_prefix, err);
+                return;
+              }
+              winston.info(winston_prefix, "Task marked as done !");
+         });
 
          res.redirect('/finished');
 

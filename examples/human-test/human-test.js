@@ -6,8 +6,8 @@ if( has_workflow_just_started() ) {
 
     input: {
 
-      type: 'local',
-      //type: 'mturk',
+      //type: 'local',
+      type: 'mturk',
 
        mturk: {
           title : "Vote on Text Improvement",
@@ -16,8 +16,6 @@ if( has_workflow_just_started() ) {
           duration: 3600, // 1 hour
           maxAssignments : 1
         },
-
-          // or template
 
         "email-notification": {
             to: "eric.abouaf@gmail.com",
@@ -39,7 +37,7 @@ if( has_workflow_just_started() ) {
                   "<label class='checkbox'>"+
                   "<input type='checkbox' name='mybool'> Check me out"+
                   "</label>"+
-                  "<button type='submit' class='btn btn-primary'>Submit</button>"+
+                  "<button type='submit' class='btn btn-primary' id='submitButton'>Submit</button>"+
                   "</fieldset>"
     }
   }, {

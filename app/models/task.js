@@ -36,14 +36,7 @@ Task.prototype = {
       svc.client.respondActivityTaskCompleted({
          "taskToken": this.taskToken,
          "result": JSON.stringify( result )
-      }, function (awsErr, result) {
-         if(awsErr) {
-            console.log("respondActivityTaskCompleted failed : ", awsErr);
-            cb(awsErr);
-            return;
-         }
-         cb();
-      });
+      }, cb);
 
    }
 
@@ -90,9 +83,6 @@ Task.find = function(taskToken, cb) {
  * Create a new task. Instantiate either a LocalTask or MturkTask based on config.type
  */
 Task.create = function(taskToken, config, cb) {
-
-  console.log("Creating task locally : ", config);
-
   var klass = Task.klassForType(config.type),
       t = new klass(taskToken, config );
   t.save(cb);

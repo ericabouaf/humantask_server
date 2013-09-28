@@ -1,12 +1,26 @@
 #!/usr/bin/env node
 
+var express = require('express'),
+    winston = require('winston'),
+    expressLayouts = require('express-ejs-layouts'),
+    ejs = require('ejs');
+
+var winston_prefix = "[HTTP Server]";
+
+
+/**
+ * Logger
+ */
+
+winston.remove(winston.transports.Console);
+winston.add(winston.transports.Console, {
+	colorize: true
+});
+
 /**
  * HTTP SERVER
  */
 
-var express = require('express'),
-    expressLayouts = require('express-ejs-layouts'),
-    ejs = require('ejs');
 
 var app = express();
 
@@ -26,10 +40,9 @@ app.configure(function(){
 require('./app/controllers/tasks_controller').controller(app);
 
 // start the server
-app.listen(app.config.server.port, app.config.server.ip);
+app.listen(app.config.server.port, app.config.server.host);
 
-console.log("App started in '"+app.set('env')+"' environment !\n" +
-            "Listening on http://"+app.config.server.host+":"+app.config.server.port);
+winston.info(winston_prefix, "Listening on http://"+app.config.server.host+":"+app.config.server.port);
 
 
 

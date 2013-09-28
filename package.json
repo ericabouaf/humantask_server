@@ -1,5 +1,5 @@
 { 
-    "name" : "foule",
+    "name" : "humantask_server",
     "version": "0.0.1",
     "main" : "./server.js",
     "private": true,
@@ -13,6 +13,7 @@
         "aws-swf": "4.0.0",
         "async": "0.1.22",
         "mturk": "git://github.com/neyric/mturk.git",
-        "aws-sdk": "1.6.0"
+        "aws-sdk": "1.6.0",
+        "winston": "0.7.2"
     }
 }
