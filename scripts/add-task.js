@@ -3,6 +3,8 @@ var Task = require('../app/models/task.js').Task;
 
 var t = new Task('1234567890', {
 
+  type: 'local',
+
    title : "Vote on Text Improvement",
    description : "Decide which two small paragraphs is closer to a goal.",
    reward : 0.01,

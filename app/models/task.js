@@ -59,6 +59,10 @@ Task.registerType = function(type, klass) {
    Task.types[type] = klass;
 };
 
+Task.klassForType = function(type) {
+  return Task.types[type || 'local'];
+};
+
 
 /**
  * Find a task given its taskToken
@@ -69,13 +73,31 @@ Task.find = function(taskToken, cb) {
         cb(err);
         return;
       }
+      if(!result) {
+        cb(null, null);
+        return;
+      }
       var config = JSON.parse(result),
-          type = config.type || 'local',
-          klass = Task.types[type],
+          klass = Task.klassForType(config.type),
           task = new klass(taskToken, config);
       cb(null, task);
    });
 };
+
+
+
+/**
+ * Create a new task. Instantiate either a LocalTask or MturkTask based on config.type
+ */
+Task.create = function(taskToken, config, cb) {
+
+  console.log("Creating task locally : ", config);
+
+  var klass = Task.klassForType(config.type),
+      t = new klass(taskToken, config );
+  t.save(cb);
+};
+
 
 
 /**

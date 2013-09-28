@@ -2,6 +2,7 @@
 var util = require('util'),
     Task = require('./task').Task,
     config = require(__dirname + '/../../config.js'),
+    querystring = require('querystring'),
     mturk = require('mturk')(config.mturk);
 
 /**
@@ -41,26 +42,38 @@ MturkTask.prototype.createHit = function (cb) {
        price = new mturk.Price( String(mturkParams.reward), "USD"),
        that = this;
 
-   mturk.HITType.create(mturkParams.title, mturkParams.description, price, mturkParams.duration, mturkParams.options, function(err, hitType) {
+   var mturkShortToken = this.taskToken.substr(0,200);
 
-      if(err) { cb(err); return; }
+   Task.redisClient.hset('mturk-shortener', mturkShortToken, this.taskToken, function(err, results) {
 
-      var options = {maxAssignments: mturkParams.maxAssignments || 1},
-          lifeTimeInSeconds = 3600, // 1 hour
-          questionXML = MturkTask.externalUrlXml("http://localhost:3000/mturk/"+that.taskToken, 800);
+     mturk.HITType.create(mturkParams.title, mturkParams.description, price, mturkParams.duration, mturkParams.options, function(err, hitType) {
 
-      mturk.HIT.create(hitType.id, questionXML, lifeTimeInSeconds, {
-         requesterAnnotation: JSON.stringify({taskToken: that.taskToken })
-      }, function(err, hit) {
+        if(err) { cb(err); return; }
 
-         if(err) { cb(err); return; }
-         cb(null, {hitType: hitType, hit: hit})
+        var options = {maxAssignments: mturkParams.maxAssignments || 1},
+            lifeTimeInSeconds = 3600, // 1 hour
+            questionXML = MturkTask.externalUrlXml("http://localhost:3000/mturk/"+querystring.escape(that.taskToken), 800);
 
-      });
+        mturk.HIT.create(hitType.id, questionXML, lifeTimeInSeconds, {
+           requesterAnnotation: JSON.stringify({taskToken: mturkShortToken })
+        }, function(err, hit) {
+
+           if(err) { cb(err); return; }
+           cb(null, {hitType: hitType, hit: hit});
+
+        });
+
+     });
 
    });
 
+};
 
+
+MturkTask.findByShortToken = function(mturkShortToken, cb) {
+  Task.redisClient.hget('mturk-shortener', mturkShortToken, function(err, taskToken) {
+    Task.find(taskToken, cb);
+  });
 };
 
 
