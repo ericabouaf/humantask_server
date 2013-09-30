@@ -5,13 +5,7 @@ var t = new Task('1234567890', {
 
   type: 'local',
 
-   title : "Vote on Text Improvement",
-   description : "Decide which two small paragraphs is closer to a goal.",
-   reward : 0.01,
-   duration: 3600, // 1 hour
-   maxAssignments : 1,
-
-   "email-notification": {
+   emailNotification: {
       to: "eric.abouaf@gmail.com",
       subject: "Ceci est un test !"
    },
@@ -30,7 +24,7 @@ var t = new Task('1234567890', {
              "<label class='checkbox'>"+
              "<input type='checkbox' name='mybool'> Check me out"+
              "</label>"+
-             "<button type='submit' class='btn btn-primary'>Submit</button>"+
+             "<button type='submit' class='btn btn-primary' id='submitButton'>Submit</button>"+
              "</fieldset>"
 });
 

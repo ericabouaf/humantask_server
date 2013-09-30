@@ -1,0 +1,17 @@
+<h1>Select the best image</h1>
+
+
+<p>Select an image that best fits the following text :</p>
+
+<p>{{data.text}}</p>
+
+
+{{#data.image_urls}}
+<p>
+  <input type="radio" name="src" value="{{src}}">
+  <img src='{{src}}' />
+</p>
+{{/data.image_urls}}
+
+
+<button type='submit' class='btn btn-primary' id='submitButton'>Submit</button>

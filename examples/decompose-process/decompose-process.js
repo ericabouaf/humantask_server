@@ -11,6 +11,7 @@ if( has_workflow_just_started() ) {
     activity: 'humantask',
     input: function() {
       return {
+        type: 'local',
         data: workflow_input().taskDescription,
         template: file('./decompose-process/task-identification.html')
       };
@@ -46,6 +47,7 @@ if( completed('taskIdentification') && results('taskIdentification').splittable 
     activity: 'humantask',
     input: function() {
       return {
+        type: 'local',
         data: {
           taskDescription: workflow_input().taskDescription,
           taskIdentification: results('taskIdentification')
@@ -72,7 +74,7 @@ if( completed('splitTasks') ) {
 
   results('splitTasks').steps.forEach(function(step) {
 
-    var subTaskName = 'sub-process-'+i
+    var subTaskName = 'sub-process-'+i;
 
     i += 1;
 
@@ -80,7 +82,7 @@ if( completed('splitTasks') ) {
 
       start_childworkflow({
          name: subTaskName,
-         workflow: 'decompose-process',
+         workflow: 'decompose-process'
       }, {
          taskStartToCloseTimeout: "3600",
          executionStartToCloseTimeout: "3600",

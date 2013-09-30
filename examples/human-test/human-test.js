@@ -6,8 +6,7 @@ if( has_workflow_just_started() ) {
 
     input: {
 
-      type: 'local',
-      //type: 'mturk',
+      type: 'mturk',
 
        mturk: {
           title : "Vote on Text Improvement",
@@ -16,14 +15,21 @@ if( has_workflow_just_started() ) {
           duration: 3600, // 1 hour
           maxAssignments : 1
         },
+        
 
+       // or
+
+        /*
+        type: 'local',
         emailNotification: {
             to: "eric.abouaf@gmail.com",
             subject: "Ceci est un test !"
         },
+        */
+
+
 
         "data": [{label: "this"},{label: "list"}, {label: "is"}, {label: "templated"}],
-
         template: "<h1>Default humantask template</h1>"+
                 "<ul>"+
                   "{{#data}}<li>{{label}}</li>{{/data}}"+

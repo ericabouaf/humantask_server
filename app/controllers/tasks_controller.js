@@ -126,6 +126,17 @@ exports.controller = function(app) {
                   taskToken: "no"
                } 
             });
+
+            // mark local task as done !
+            req.task.removeFromOpen(function(err) {
+                if(err) {
+                  winston.error(winston_prefix, "Unable to mark task as done !");
+                  winston.error(winston_prefix, err);
+                  return;
+                }
+                winston.info(winston_prefix, "Task marked as done !");
+             });
+
             return;
          }
 

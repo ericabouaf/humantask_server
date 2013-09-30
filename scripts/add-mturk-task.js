@@ -3,7 +3,7 @@ var MturkTask = require('../app/models/mturk-task.js').MturkTask;
 
 var t = new MturkTask('1234567890', {
 
-   type: 'mturk', // should be set automatically
+   type: 'mturk',
 
    mturk: {
       title : "Vote on Text Improvement",
@@ -12,11 +12,6 @@ var t = new MturkTask('1234567890', {
       duration: 3600, // 1 hour
       maxAssignments : 1,
       options: {}
-   },
-
-   "email-notification": {
-      to: "eric.abouaf@gmail.com",
-      subject: "Ceci est un test !"
    },
 
    "data": [{label: "this"},{label: "list"}, {label: "is"}, {label: "templated"}],
@@ -33,7 +28,7 @@ var t = new MturkTask('1234567890', {
              "<label class='checkbox'>"+
              "<input type='checkbox' name='mybool'> Check me out"+
              "</label>"+
-             "<button type='submit' class='btn btn-primary'>Submit</button>"+
+             "<button type='submit' class='btn btn-primary' id='submitButton'>Submit</button>"+
              "</fieldset>"
 });
 
