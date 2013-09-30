@@ -1,0 +1,234 @@
+<html>
+<body>
+
+<div id="wrapper">
+
+<form name="mturk_form" method="post" id="mturk_form" action="https://www.mturk.com/mturk/externalSubmit">
+<input type="hidden" value="ASSIGNMENT_ID_NOT_AVAILABLE" name="assignmentId" id="assignmentId">
+
+<style>
+#guideline_box {
+}
+#guideline {
+  width: 97%;
+  height: 150px;
+  overflow: auto;
+  border-style: solid;
+  border-width: 1px;
+  padding: 5px;
+}
+.criterion_table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.criterion_table tr td {
+  border-style: solid;
+  border-width: 1px;
+  border-color: black;
+}
+.criterion_table tr:nth-child(1) td:nth-child(1) {
+  width:25%
+}
+.criterion_table tr td {
+  text-align: left;
+  vertical-align: top;
+}
+.bold_text {
+  font: arial;
+  font-size: 13;
+  font-weight: bold;
+}
+.instruction_text {
+  font: arial;
+  font-size: 12;
+}
+</style>
+<div id="guideline_box">
+  <span class="bold_text">Instructions<span id="guideline_arrow">↓</span></span>
+  <div id="guideline" class="instruction_text" style="">
+    <p>Pick the best sentiment based on the following criterion.</p>
+    <table class="criterion_table instruction_text">
+      
+        <tbody><tr>
+          <td>Strongly positive</td>
+          <td>
+            Select this if the item embodies emotion that was extremely happy or excited toward the topic.  For example, "Their customer service is the best that I've seen!!!!"
+          </td>
+        </tr>
+      
+        <tr>
+          <td>Positive</td>
+          <td>
+            Select this if the item embodies emotion that was generally happy or satisfied, but the emotion wasn't extreme.  For example, "Sure I'll shop there again."
+          </td>
+        </tr>
+      
+        <tr>
+          <td>Neutral</td>
+          <td>
+            Select this if the item does not embody much of positive or negative emotion toward the topic.  For example, "Yeah, I guess it's ok." or "Is their customer service open 24x7?"
+          </td>
+        </tr>
+      
+        <tr>
+          <td>Negative</td>
+          <td>
+            Select this if the item embodies emotion that is perceived to be angry or upsetting toward the topic, but not to the extreme.  For example, "I don't know if I'll shop there again because I don't trust them."
+          </td>
+        </tr>
+      
+        <tr>
+          <td>Strongly negative</td>
+          <td>
+            Select this if the item embodies negative emotion toward the topic that can be perceived as extreme.  For example, "These guys are teriffic... NOTTTT!!!!!!" or "I will NEVER shop there again!!!"
+          </td>
+        </tr>
+          </tbody></table>
+  </div>
+</div><br>
+
+
+<span style="font: arial; font-size: 14px; font-weight:bold;">Judge the sentiment expressed by the following item toward: GNC (a store that sells vitamins and exercise supplements)</span>
+
+<div style="width:100%; background-color:#F8F5D8">
+
+<p>
+
+  
+  “@_Big_Dipper: I need to borrow someones gold card please!!!”gnc?
+
+</p>
+</div>
+
+
+<!-- STARTSCALE -->
+<style>
+.outer_div {
+  position: relative;
+}
+.canvas_div {
+  width: 400px;
+  height: 75px;
+}
+.canvas_div canvas {
+  width: 400px;
+  height: 75px;
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+.radio_div {
+  width: 400px;
+  height: 75px;
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+.radio_div table {
+  width: 400px;
+  border: none;
+  border-collapse: collapse;
+}
+.radio_div table tr td {
+  font-size: 14px;
+  background-color: transparent;
+  vertical-align: top;
+  text-align: center;
+  border: none;
+  padding: 0px;
+}
+.radio_div table tr:nth-child(1) td {
+  width: 20%;
+  height: 25px;
+  vertical-align: middle;
+}
+</style>
+<div id="sentiment_scale" class="outer_div">
+  <div class="canvas_div">
+    <canvas id="line_canvas"></canvas>
+  </div>
+  <div class="radio_div">
+    <table>
+      <tbody><tr>
+        <td><input type="radio" onclick="radioClicked(this);" name="item" value="-2"></td>
+        <td><input type="radio" onclick="radioClicked(this);" name="item" value="-1"></td>
+        <td><input type="radio" onclick="radioClicked(this);" name="item" value="0"></td>
+        <td><input type="radio" onclick="radioClicked(this);" name="item" value="1"></td>
+        <td><input type="radio" onclick="radioClicked(this);" name="item" value="2"></td>
+      </tr>
+      <tr>
+        <td>Strongly negative</td>
+        <td>Negative</td>
+        <td>Neutral</td>
+        <td>Positive</td>
+        <td>Strongly positive</td>
+      </tr>
+    </tbody></table>
+  </div>
+</div>
+<script type="text/javascript">
+  var ctx = document.getElementById("line_canvas").getContext("2d");
+  ctx.lineWidth = 1;
+  ctx.fillStyle="#000000";
+  ctx.beginPath();
+  ctx.strokeStyle = "#888888";
+  ctx.lineWidth = 5;
+  ctx.moveTo(30, 24);
+  ctx.lineTo(270, 24);
+  ctx.stroke();
+
+
+  function radioClicked(radio) {
+    var dontSubmit = !window.turkGetParam || ("ASSIGNMENT_ID_NOT_AVAILABLE" == turkGetParam('assignmentId', ""));
+
+    
+    if (dontSubmit) {
+      radio.checked = false;
+    } else {
+      enableSubmit();
+    }
+    
+  }
+
+  function setup() {
+    disableSubmit();
+  }
+
+  function enableSubmit() {
+    if (document.getElementById("submitButton")) {
+      document.getElementById("submitButton").disabled = false;
+    }
+  }
+  function disableSubmit(){
+    if (document.getElementById("submitButton")) {
+      document.getElementById("submitButton").disabled = true;
+    }
+  }
+  //disable button on page load
+  if(window.attachEvent) {
+    window.attachEvent('onload', setup);
+  } else {
+    if(window.onload) {
+      var curronload = window.onload;
+      var newonload = function() {
+        curronload();
+        setup();
+      };
+      window.onload = newonload;
+    } else {
+      window.onload = setup;
+    }
+  }
+  
+</script>
+<!-- ENDSCALE -->
+
+
+
+<p><input type="submit" id="submitButton" value="You must ACCEPT the HIT before you can submit the results." disabled=""></p>
+</form>
+
+</div>
+
+</body>
+</html>

@@ -1,0 +1,56 @@
+digraph G { 
+
+
+    start [shape=circle,style=filled];
+
+    describeWebsiteProject [shape=box3d];
+    findSimilarWebsites [shape=box3d];
+    findKeywords [shape=box3d];
+    evaluateROI [shape=box3d];
+
+
+    DCgo [shape=diamond,label="+"];
+
+    findName [shape=box3d];
+    createLogo [shape=box3d];
+    createWebsiteDesign [shape=box3d];
+
+    findPageSubjects [shape=box3d];
+    writeArticles [shape=box3d];
+    findIllustrationsForArticles [shape=box3d];
+    publishArticles [shape=box3d];
+
+    hosting [shape=box3d];
+
+    end [shape=circle,style=filled];
+    noGO [shape=circle,style=filled];
+
+
+
+
+
+
+
+    start -> describeWebsiteProject;
+
+    describeWebsiteProject -> findSimilarWebsites;
+    findSimilarWebsites -> findKeywords;
+    findKeywords -> evaluateROI;
+    evaluateROI -> noGO;
+    evaluateROI -> DCgo;
+
+    DCgo -> findName;
+    findName -> createLogo;
+    createLogo -> createWebsiteDesign;
+
+    DCgo -> findPageSubjects;
+    findPageSubjects -> writeArticles;
+    writeArticles -> findIllustrationsForArticles;
+
+    findIllustrationsForArticles -> publishArticles;
+    createWebsiteDesign -> hosting;
+    
+    hosting -> publishArticles;
+
+    publishArticles -> end;
+} 
