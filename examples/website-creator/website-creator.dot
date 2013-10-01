@@ -1,56 +1,84 @@
 digraph G { 
 
 
+    ###########################
+    # Website creator nodes
+    ###########################
+
     start [shape=circle,style=filled];
-
-    describeWebsiteProject [shape=box3d];
-    findSimilarWebsites [shape=box3d];
-    findKeywords [shape=box3d];
-    evaluateROI [shape=box3d];
-
-
-    DCgo [shape=diamond,label="+"];
-
-    findName [shape=box3d];
-    createLogo [shape=box3d];
-    createWebsiteDesign [shape=box3d];
-
-    findPageSubjects [shape=box3d];
-    writeArticles [shape=box3d];
-    findIllustrationsForArticles [shape=box3d];
-    publishArticles [shape=box3d];
-
-    hosting [shape=box3d];
-
-    end [shape=circle,style=filled];
-    noGO [shape=circle,style=filled];
+    describeWebsiteProject [shape=box,label="Describe website project\n(crowdsourcer)"];
+    findSimilarWebsites [shape=box3d,label="Find similar Websites\n(microtasks)"];
+    extractKeywords [shape=box3d,label="Extract Keywords\n(automated)"];
+    evaluateROI [shape=box3d,label="Evaluate ROI\n(macrotask)"];
+    GO [shape=circle,style=filled];
+    noGO [shape=circle,style=filled,label=""];
 
 
-
-
-
-
-
+    # Website creator links
     start -> describeWebsiteProject;
+    describeWebsiteProject -> findSimilarWebsites [label="website description"];
+    findSimilarWebsites -> extractKeywords [label="similar websites"];
+    extractKeywords -> evaluateROI [label="targeted keywords"];
+    evaluateROI -> noGO [label="no GO"];
+    evaluateROI -> GO;
 
-    describeWebsiteProject -> findSimilarWebsites;
-    findSimilarWebsites -> findKeywords;
-    findKeywords -> evaluateROI;
-    evaluateROI -> noGO;
-    evaluateROI -> DCgo;
-
-    DCgo -> findName;
-    findName -> createLogo;
-    createLogo -> createWebsiteDesign;
-
-    DCgo -> findPageSubjects;
-    findPageSubjects -> writeArticles;
-    writeArticles -> findIllustrationsForArticles;
-
-    findIllustrationsForArticles -> publishArticles;
-    createWebsiteDesign -> hosting;
     
-    hosting -> publishArticles;
+    ###########################
+    # Set-up website node
+    ###########################
 
-    publishArticles -> end;
+    startSetup [shape=circle,style=filled];
+    findName [shape=box,label="Find website name\n(crowd contest)"];
+    registerDomain [shape=box,label="Register domain name\n(automated)"];
+    createLogo [shape=box,label="Create Logo\n(crowd contest)"];
+    createWebsiteDesign [shape=box,label="Create Website Design\n(crowd contest)"];
+    hosting [shape=box,label="Set-up hosting\n(automated)"];
+    endSetup [shape=circle,style=filled];
+
+    # Set-up website links
+    startSetup -> findName;
+    findName -> createLogo;
+    findName -> registerDomain [label="Domain name"];
+    registerDomain -> hosting;
+    hosting -> endSetup;
+    createLogo -> createWebsiteDesign;
+    createWebsiteDesign -> endSetup;
+
+
+    ###########################
+    # Create content nodes
+    ###########################
+
+    startContent [shape=circle,style=filled,label="start"];
+    extractPageTitles [shape=box3d,label="Extract page titles/H1\n(automated)"];
+    filterPageTitles [shape=box3d];
+    publishArticles [shape=box,label="Publish article\n(automated)"];
+    generateArticle [shape=box3d];
+    endContent [shape=circle,style=filled,label="end"];
+
+
+    # Create content links
+    startContent -> extractPageTitles [label="similar websites"];
+    extractPageTitles -> filterPageTitles;
+    filterPageTitles -> generateArticle;
+    generateArticle -> publishArticles;
+    generateArticle -> generateArticle;
+    publishArticles -> endContent;
+
+
+    ###########################
+    # Generate article
+    ###########################
+
+    genArticle [shape=circle,style=filled,label="Article"];
+    writeArticle  [shape=box3d];
+    findIllustrationForArticle [shape=box3d];
+    endArticle [shape=circle,style=filled,label="end"];
+
+    genArticle -> writeArticle;
+    writeArticle -> findIllustrationForArticle;
+    findIllustrationForArticle -> endArticle;
+
 } 
+
+
