@@ -1,83 +1,125 @@
+
+# rm website-creator.png && dot website-creator.dot -Tpng > website-creator.png
+
 digraph G { 
 
+    node[shape="box"];
 
-    ###########################
-    # Website creator nodes
-    ###########################
+    subgraph cluster0 {
 
-    start [shape=circle,style=filled];
-    describeWebsiteProject [shape=box,label="Describe website project\n(crowdsourcer)"];
-    findSimilarWebsites [shape=box3d,label="Find similar Websites\n(microtasks)"];
-    extractKeywords [shape=box3d,label="Extract Keywords\n(automated)"];
-    evaluateROI [shape=box3d,label="Evaluate ROI\n(macrotask)"];
-    GO [shape=circle,style=filled];
-    noGO [shape=circle,style=filled,label=""];
+        #node [style=filled];
+        label = "Website creator";
 
+        # nodes
+        start [shape=circle,style=filled];
+        describeWebsiteProject [label="Describe website project\n(crowdsourcer)"];
+        findSimilarWebsites [shape=box3d,label="Find similar Websites\n(microtasks)"];
+        extractKeywords [shape=box3d,label="Extract Keywords\n(automated)"];
+        evaluateROI [shape=box3d,label="Evaluate ROI\n(macrotask)"];
+        end [shape=circle,style=filled,label="end"];
 
-    # Website creator links
-    start -> describeWebsiteProject;
-    describeWebsiteProject -> findSimilarWebsites [label="website description"];
-    findSimilarWebsites -> extractKeywords [label="similar websites"];
-    extractKeywords -> evaluateROI [label="targeted keywords"];
-    evaluateROI -> noGO [label="no GO"];
-    evaluateROI -> GO;
+        # Website creator links
+        start -> describeWebsiteProject;
+        describeWebsiteProject -> findSimilarWebsites [label="website description"];
+        findSimilarWebsites -> extractKeywords [label="similar websites"];
+        extractKeywords -> evaluateROI [label="targeted keywords"];
+        evaluateROI -> end [label="GO/no GO"];
+    }
 
-    
-    ###########################
-    # Set-up website node
-    ###########################
+    subgraph cluster1 {
+        
+        label = "Set-up website";
 
-    startSetup [shape=circle,style=filled];
-    findName [shape=box,label="Find website name\n(crowd contest)"];
-    registerDomain [shape=box,label="Register domain name\n(automated)"];
-    createLogo [shape=box,label="Create Logo\n(crowd contest)"];
-    createWebsiteDesign [shape=box,label="Create Website Design\n(crowd contest)"];
-    hosting [shape=box,label="Set-up hosting\n(automated)"];
-    endSetup [shape=circle,style=filled];
+        startSetup [shape=circle,style=filled,label="start"];
+        findName [label="Find website name\n(crowd contest)"];
+        registerDomain [label="Register domain name\n(automated)"];
+        createLogo [label="Create Logo\n(crowd contest)"];
+        createWebsiteDesign [label="Create Website Design\n(crowd contest)"];
+        hosting [label="Set-up hosting\n(automated)"];
+        endSetup [shape=circle,style=filled,label="end"];
 
-    # Set-up website links
-    startSetup -> findName;
-    findName -> createLogo;
-    findName -> registerDomain [label="Domain name"];
-    registerDomain -> hosting;
-    hosting -> endSetup;
-    createLogo -> createWebsiteDesign;
-    createWebsiteDesign -> endSetup;
+        # Set-up website links
+        startSetup -> findName;
+        findName -> createLogo;
+        findName -> registerDomain [label="Domain name"];
+        registerDomain -> hosting;
+        hosting -> endSetup;
+        createLogo -> createWebsiteDesign;
+        createWebsiteDesign -> endSetup;
 
+    }
 
-    ###########################
-    # Create content nodes
-    ###########################
+    subgraph cluster11 {
+        
+        label = "Set-up SEO";
 
-    startContent [shape=circle,style=filled,label="start"];
-    extractPageTitles [shape=box3d,label="Extract page titles/H1\n(automated)"];
-    filterPageTitles [shape=box3d];
-    publishArticles [shape=box,label="Publish article\n(automated)"];
-    generateArticle [shape=box3d];
-    endContent [shape=circle,style=filled,label="end"];
+        startSeo [shape=circle,style=filled,label="start"];
+        
+        #hosting [shape=box,label="Set-up hosting\n(automated)"];
+        endSeo [shape=circle,style=filled,label="end"];
 
+        # Set-up website links
+        startSeo -> createEmailAdress;
+        createEmailAdress -> createTwitterAccount;
+        createEmailAdress -> createFacebookAccount;
 
-    # Create content links
-    startContent -> extractPageTitles [label="similar websites"];
-    extractPageTitles -> filterPageTitles;
-    filterPageTitles -> generateArticle;
-    generateArticle -> publishArticles;
-    generateArticle -> generateArticle;
-    publishArticles -> endContent;
+        createTwitterAccount -> endSeo;
+        createFacebookAccount -> endSeo;
+    }
 
 
-    ###########################
-    # Generate article
-    ###########################
+    subgraph cluster2 {
 
-    genArticle [shape=circle,style=filled,label="Article"];
-    writeArticle  [shape=box3d];
-    findIllustrationForArticle [shape=box3d];
-    endArticle [shape=circle,style=filled,label="end"];
+        label = "Create content";
 
-    genArticle -> writeArticle;
-    writeArticle -> findIllustrationForArticle;
-    findIllustrationForArticle -> endArticle;
+        startContent [shape=circle,style=filled,label="start"];
+        extractPageTitles [shape=box3d,label="Extract page titles/H1\n(automated)"];
+        filterPageTitles [shape=box3d,label="Filter page titles\n(crowdsourcer)"];
+        generateArticles [shape=box3d];
+        endContent [shape=circle,style=filled,label="end"];
+
+        # Create content links
+        startContent -> extractPageTitles [label="similar websites"];
+        extractPageTitles -> filterPageTitles;
+        filterPageTitles -> generateArticles;
+        generateArticles -> generateArticles;
+        generateArticles -> endContent;
+    }
+
+
+    subgraph cluster3 {
+
+        label = "Generate an article";
+
+        genArticle [shape=circle,style=filled,label="start"];
+        createNewArticle;
+        publishArticle [label="Publish article\n(automated)"];
+        endArticle [shape=circle,style=filled,label="end"];
+
+        genArticle -> createNewArticle;
+        createNewArticle -> publishArticle [label="illustration"];
+        publishArticle -> postOnTwitter [label="url"];
+        postOnTwitter -> endArticle;
+
+    }
+
+
+    subgraph cluster4 {
+
+        label = "New article";
+
+        newArticle [shape=circle,style=filled,label="start"];
+        improvePageTitles [shape=box3d,label="Improve page title\n(microtasks)"];
+        writeArticle  [shape=box3d,label="Write Article\n(macrotask)"];
+        findIllustrationForArticle [shape=box3d,label="Find Illustration\n(microtasks)"];
+        endNewArticle [shape=circle,style=filled,label="end"];
+
+        newArticle -> improvePageTitles [label="orignal title"];
+        improvePageTitles -> writeArticle [label="article title"];
+        writeArticle -> findIllustrationForArticle [label="content"];
+        findIllustrationForArticle -> endNewArticle;
+
+    }
 
 } 
 
