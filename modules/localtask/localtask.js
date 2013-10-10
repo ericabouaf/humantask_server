@@ -190,3 +190,202 @@ exports.controller = function(app) {
 
 
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+var swf = require('aws-swf'),
+   redis = require('redis');
+
+
+var redisClient = redis.createClient(),
+    svc = swf.createClient();
+
+
+/**
+ * Abstract Task
+ * @constructor
+ */
+var Task = exports.Task = function(taskToken, config) {
+   this.taskToken = taskToken;
+   this.config = config;
+};
+
+Task.redisClient = redisClient;
+
+Task.prototype = {
+
+   /**
+    * Save the task in redis
+    */
+   save: function(cb) {
+      redisClient.set(this.taskToken, JSON.stringify(this.config), cb);
+   },
+
+
+   /**
+    * Send the response to SWF
+    */
+   respondCompleted: function(result, cb) {
+
+      svc.client.respondActivityTaskCompleted({
+         "taskToken": this.taskToken,
+         "result": JSON.stringify( result )
+      }, cb);
+
+   }
+
+    
+
+};
+
+
+
+Task.types = {};
+
+Task.registerType = function(type, klass) {
+   Task.types[type] = klass;
+};
+
+Task.klassForType = function(type) {
+  return Task.types[type || 'local'];
+};
+
+
+/**
+ * Find a task given its taskToken
+ */
+Task.find = function(taskToken, cb) {
+   redisClient.get(taskToken, function(err, result) {
+      if(err) {
+        cb(err);
+        return;
+      }
+      if(!result) {
+        cb(null, null);
+        return;
+      }
+      var config = JSON.parse(result),
+          klass = Task.klassForType(config.type),
+          task = new klass(taskToken, config);
+      cb(null, task);
+   });
+};
+
+
+
+/**
+ * Create a new task. Instantiate either a LocalTask or MturkTask based on config.type
+ */
+Task.create = function(taskToken, config, cb) {
+  var klass = Task.klassForType(config.type),
+      t = new klass(taskToken, config );
+  t.save(cb);
+};
+
+
+
+/**
+ * List open tasks
+ */
+Task.list =  function(count, cb) {
+
+   redisClient.lrange('open', 0, count, function(err, results) {
+      cb(err, results);
+   });
+
+};
+
+
+
+
+
+var util = require('util'),
+    Task = require('./task').Task,
+    config = require(__dirname + '/../../config.js'),
+    nodemailer = require('nodemailer'),
+    querystring = require('querystring');
+
+var smtpTransport = nodemailer.createTransport("SMTP", config.mailer_transport);
+
+/**
+ * LocalTask
+ */
+var LocalTask = exports.LocalTask = function(taskToken, config) {
+    Task.call(this, taskToken, config);
+};
+
+util.inherits(LocalTask, Task);
+
+
+LocalTask.prototype.save = function(cb) {
+   var tt = this.taskToken;
+   var that = this;
+   Task.redisClient.set(tt, JSON.stringify(this.config), function(err) {
+      if(err) {
+         cb(err);
+         return;
+      }
+      Task.redisClient.rpush("open", tt, cb);
+
+      if(that.config.emailNotification) {
+        sendNotification(that.config.emailNotification, tt, config);
+      }
+
+   });
+};
+
+
+// Delete the activity from the 'open' list
+LocalTask.prototype.removeFromOpen = function(cb) {
+  var tt = this.taskToken;
+  Task.redisClient.lrem('open', 0, tt, function(err) {
+      if (err) { cb(err); return; }
+      Task.redisClient.rpush('done', tt , cb);
+  });
+};
+
+
+Task.registerType('local', LocalTask);
+
+
+/**
+ * Send notifications
+ */
+function sendNotification(notification, taskToken, config) {
+
+   var mailOptions = {
+
+      from: notification.from || config.mailer_transport.auth.email,
+      to: notification.to,
+      subject: notification.subject,
+
+
+      text: "Hello world",
+      html: "New task : <a href='http://" + config.server.host + ":" + config.server.port + "/activity/"+querystring.escape(taskToken)+"'>Click here to do the task !</a>"
+   };
+   
+   // send mail with defined transport object
+   smtpTransport.sendMail(mailOptions, function(error, response){
+      if(error){
+        console.log("Unable to send notification !");
+        console.log(error);
+      } else {
+        console.log("HUMANTASK WORKER email notification sent: " + response.message);
+      }
+   });
+
+}
+
