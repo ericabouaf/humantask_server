@@ -2,11 +2,9 @@
 if( has_workflow_just_started() ) {
   schedule({
     name: 'step1',
-    activity: 'humantask',
+    activity: 'localtask', /* or 'mturk' */
 
     input: {
-
-      type: 'mturk',
 
        mturk: {
           title : "Vote on Text Improvement",
@@ -20,7 +18,6 @@ if( has_workflow_just_started() ) {
        // or
 
         /*
-        type: 'local',
         emailNotification: {
             to: "eric.abouaf@gmail.com",
             subject: "Ceci est un test !"
@@ -30,7 +27,7 @@ if( has_workflow_just_started() ) {
 
 
         "data": [{label: "this"},{label: "list"}, {label: "is"}, {label: "templated"}],
-        template: "<h1>Default humantask template</h1>"+
+        template: "<h1>Label an image</h1>"+
                 "<ul>"+
                   "{{#data}}<li>{{label}}</li>{{/data}}"+
                 "</ul>"+
@@ -46,13 +43,8 @@ if( has_workflow_just_started() ) {
                   "<button type='submit' class='btn btn-primary' id='submitButton'>Submit</button>"+
                   "</fieldset>"
     }
-  }, {
-      // No timeout
-      heartbeatTimeout: "NONE",
-      scheduleToCloseTimeout: "NONE",
-      scheduleToStartTimeout: "NONE",
-      startToCloseTimeout: "NONE"
-   });
+  });
+
 }
 
 

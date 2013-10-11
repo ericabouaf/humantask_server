@@ -10,11 +10,9 @@
 if( has_workflow_just_started() ) {
   schedule({
     name: 'step1',
-    activity: 'humantask',
+    activity: 'textmaster',
 
     input: {
-
-        type: 'textmaster',
 
 
         "data": {
@@ -42,13 +40,7 @@ if( has_workflow_just_started() ) {
         }
         
     }
-  }, {
-      // No timeout
-      heartbeatTimeout: "NONE",
-      scheduleToCloseTimeout: "NONE",
-      scheduleToStartTimeout: "NONE",
-      startToCloseTimeout: "NONE"
-   });
+  });
 }
 
 

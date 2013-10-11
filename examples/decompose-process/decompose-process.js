@@ -8,21 +8,14 @@
 if( has_workflow_just_started() ) {
   schedule({
     name: 'taskIdentification',
-    activity: 'humantask',
+    activity: 'localtask',
     input: function() {
       return {
-        type: 'local',
         data: workflow_input().taskDescription,
         template: file('./decompose-process/task-identification.html')
       };
     }
-  }, {
-      // No timeout
-      heartbeatTimeout: "NONE",
-      scheduleToCloseTimeout: "NONE",
-      scheduleToStartTimeout: "NONE",
-      startToCloseTimeout: "NONE"
-   });
+  });
 }
 
 
@@ -44,10 +37,9 @@ if( completed('taskIdentification') && results('taskIdentification').splittable 
  if( completed('taskIdentification') && results('taskIdentification').splittable === 'yes' && !scheduled('splitTasks') ) {
   schedule({
     name: 'splitTasks',
-    activity: 'humantask',
+    activity: 'localtask',
     input: function() {
       return {
-        type: 'local',
         data: {
           taskDescription: workflow_input().taskDescription,
           taskIdentification: results('taskIdentification')
@@ -55,13 +47,7 @@ if( completed('taskIdentification') && results('taskIdentification').splittable 
         template: file('./decompose-process/split-task.html')
       };
     }
-  }, {
-      // No timeout
-      heartbeatTimeout: "NONE",
-      scheduleToCloseTimeout: "NONE",
-      scheduleToStartTimeout: "NONE",
-      startToCloseTimeout: "NONE"
-   });
+  });
 }
 
 

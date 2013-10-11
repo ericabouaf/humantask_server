@@ -1,19 +1,48 @@
 
-exports.mailer_transport = {
-    service: "Gmail",
-    auth: {
-        user: "xxxx",
-        pass: "xxx"
+exports.core = {
+
+    httpServer: {
+        port: 3000,
+        host: 'localhost'
+    },
+
+    swfPoller: {
+        domain: 'aws-swf-test-domain',
+        taskList: {name: "aws-swf-tasklist" },
+        identity: 'HumanTask server'
     }
-};
 
-exports.server = {
-    port: 3000,
-    host: 'localhost'
 };
 
 
-exports.mturk = {
+exports.modules = {};
+
+
+
+/**
+ * LocalTask module
+ */
+exports.modules.localtask = {
+
+    // For email notifications
+    mailer_transport: {
+        service: "Gmail",
+        auth: {
+            user: "xxxx",
+            pass: "xxxx"
+        }
+    }
+
+};
+
+    
+
+
+
+/**
+ * Amazon Mechanichal Turk
+ */
+exports.modules.mturk = {
     url: "https://mechanicalturk.sandbox.amazonaws.com",
     accessKeyId: "...",
     secretAccessKey: "...",
@@ -22,8 +51,13 @@ exports.mturk = {
     poller: { frequency_ms: 60000 }
 };
 
-exports.swf_poller = {
-    domain: 'aws-swf-test-domain',
-    taskList: {name: "aws-swf-tasklist" },
-    identity: 'HumanTask server'
+
+/**
+ * Textmaster configuration
+ */
+exports.modules.textmaster = {
+    apikey: "xxxx",
+    apisecret: "xxxx"
 };
+
+

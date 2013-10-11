@@ -2,13 +2,6 @@
 
 // swf-start improve-text  "{\"text_to_improve\":\"this is a test\"}"
 
-var no_timeout = {
-  // No timeout
-  heartbeatTimeout: "NONE",
-  scheduleToCloseTimeout: "NONE",
-  scheduleToStartTimeout: "NONE",
-  startToCloseTimeout: "NONE"
-};
 
 ////////////
 // Helpers
@@ -45,8 +38,6 @@ function improveHit(i) {
             duration : 5 * 60
           },
 
-          type: 'local',
-
           data: {
             text_to_improve: text_to_improve
           },
@@ -72,8 +63,6 @@ function voteHit(i) {
             maxAssignments : 1
           },
 
-          type: 'local',
-
           data: {
             textA: textA,
             textB: textB
@@ -96,18 +85,18 @@ for(var i = 0 ; i < 5 ; i++) {
    if( ((i === 0) || completed('vote-hit-'+(i-1))) && !scheduled('improve-hit-'+i) ) {
      schedule({
         name: 'improve-hit-'+i,
-        activity: 'humantask',
+        activity: 'localtask',
         input: improveHit(i)
-     }, no_timeout);
+     });
    }
 
    // Vote Hit
    if( completed('improve-hit-'+i) && !scheduled('vote-hit-'+i) ) {
      schedule({
         name: 'vote-hit-'+i,
-        activity: 'humantask',
+        activity: 'localtask',
         input: voteHit(i)
-     }, no_timeout);
+     });
     }
 }
 

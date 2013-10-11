@@ -10,12 +10,11 @@
 if( has_workflow_just_started() ) {
   schedule({
     name: 'step1',
-    activity: 'humantask',
+    activity: 'localtask',
 
     input: {
 
-      /*type: 'mturk',
-
+      /*
        mturk: {
           title : "Vote on Text Improvement",
           description : "Decide which two small paragraphs is closer to a goal.",
@@ -27,8 +26,7 @@ if( has_workflow_just_started() ) {
 
        // or
 
-        
-        type: 'local',
+
         /*emailNotification: {
             to: "eric.abouaf@gmail.com",
             subject: "Ceci est un test !"
@@ -47,13 +45,7 @@ if( has_workflow_just_started() ) {
         template: file('./pick-image/pick-image.html')
 
     }
-  }, {
-      // No timeout
-      heartbeatTimeout: "NONE",
-      scheduleToCloseTimeout: "NONE",
-      scheduleToStartTimeout: "NONE",
-      startToCloseTimeout: "NONE"
-   });
+  });
 }
 
 

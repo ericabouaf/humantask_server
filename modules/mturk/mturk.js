@@ -1,86 +1,85 @@
 
-var util = require('util'),
-    Task = require('./task').Task,
-    config = require(__dirname + '/../../config.js'),
-    querystring = require('querystring'),
-    mturk = require('mturk')(config.mturk);
-
 /**
- * MturkTask
- * @constructor
- *
- *
  * uses: https://github.com/jefftimesten/mturk
  *  BUT requires neyric's branch : https://github.com/neyric/mturk
- *
  */
-var MturkTask = exports.MturkTask = function(taskToken, config) {
-    Task.call(this, taskToken, config);
-};
-
-util.inherits(MturkTask, Task);
 
 
-/**
- * Save the task in redis, and create the HIT on Mechanical Turk
- */
-MturkTask.prototype.save = function(cb) {
-   var that = this;
-   Task.redisClient.set(this.taskToken, JSON.stringify(this.config), function(err) {
-      if(err) { cb(err); return; }
-      that.createHit(cb);
-   });
-};
+var querystring = require('querystring');
 
+var mturk, _redisClient;
 
-/**
- * Create a HIT
- */
-MturkTask.prototype.createHit = function (cb) {
+module.exports = {
 
-   var mturkParams = this.config.mturk,
-       price = new mturk.Price( String(mturkParams.reward), "USD"),
-       that = this;
+    createTask: function (taskToken, config, cb) {
 
-   var mturkShortToken = this.taskToken.substr(0,200);
-
-   Task.redisClient.hset('mturk-shortener', mturkShortToken, this.taskToken, function(err, results) {
-
-     mturk.HITType.create(mturkParams.title, mturkParams.description, price, mturkParams.duration, mturkParams.options, function(err, hitType) {
-
+      var that = this;
+      _redisClient.set(this.taskToken, JSON.stringify(this.config), function(err) {
         if(err) { cb(err); return; }
 
-        var options = {maxAssignments: mturkParams.maxAssignments || 1},
-            lifeTimeInSeconds = 3600, // 1 hour
-            questionXML = MturkTask.externalUrlXml("http://"+config.server.host+":"+config.server.port+"/mturk/"+querystring.escape(that.taskToken), 800);
 
-        mturk.HIT.create(hitType.id, questionXML, lifeTimeInSeconds, {
-           requesterAnnotation: JSON.stringify({taskToken: mturkShortToken })
-        }, function(err, hit) {
+        /**
+         * Create a HIT
+         */
+         var mturkParams = config.mturk,
+             price = new mturk.Price( String(mturkParams.reward), "USD"),
+             that = this;
 
-           if(err) { cb(err); return; }
-           cb(null, {hitType: hitType, hit: hit});
+         var mturkShortToken = this.taskToken.substr(0,200);
 
-        });
+         _redisClient.hset('mturk-shortener', mturkShortToken, this.taskToken, function(err, results) {
 
-     });
+           mturk.HITType.create(mturkParams.title, mturkParams.description, price, mturkParams.duration, mturkParams.options, function(err, hitType) {
 
-   });
+              if(err) { cb(err); return; }
+
+              var options = {maxAssignments: mturkParams.maxAssignments || 1},
+                  lifeTimeInSeconds = 3600, // 1 hour
+                  questionXML = externalUrlXml("http://"+config.server.host+":"+config.server.port+"/mturk/"+querystring.escape(that.taskToken), 800);
+
+              mturk.HIT.create(hitType.id, questionXML, lifeTimeInSeconds, {
+                 requesterAnnotation: JSON.stringify({taskToken: mturkShortToken })
+              }, function(err, hit) {
+
+                 if(err) { cb(err); return; }
+                 cb(null, {hitType: hitType, hit: hit});
+
+              });
+
+           });
+
+         });
+
+
+
+      });
+       
+   },
+
+
+    start: function(app, redisClient, swfClient, moduleConfig) {
+
+      mturk = require('mturk')(moduleConfig);
+
+      _redisClient = redisClient;
+
+      require('./http-server')(app, redisClient, swfClient, moduleConfig);
+
+      require('./poller')(app, redisClient, swfClient, moduleConfig);
+
+    }
+
 
 };
 
 
-MturkTask.findByShortToken = function(mturkShortToken, cb) {
-  Task.redisClient.hget('mturk-shortener', mturkShortToken, function(err, taskToken) {
-    Task.find(taskToken, cb);
-  });
-};
+
 
 
 /**
  * Return the XML for an externalUrl HIT
  */
-MturkTask.externalUrlXml = function (url, frameHeight) {
+var externalUrlXml = function (url, frameHeight) {
    return '<ExternalQuestion xmlns="http://mechanicalturk.amazonaws.com/AWSMechanicalTurkDataSchemas/2006-07-14/ExternalQuestion.xsd">' +
           '<ExternalURL>' + url + '</ExternalURL>' +
           '<FrameHeight>' + frameHeight + '</FrameHeight>' +
@@ -88,184 +87,3 @@ MturkTask.externalUrlXml = function (url, frameHeight) {
 };
 
 
-Task.registerType('mturk', MturkTask);
-
-
-
-
-
-
-
-
-var async = require('async'),
-    winston = require('winston'),
-    Task = require(__dirname + '/../models/task.js').Task,
-    MturkTask = require(__dirname + '/../models/mturk-task.js').MturkTask;
-
-var winston_prefix = "[Mturk Poller]";
-
-module.exports = function(config) {
-
-   var mturk = require('mturk')(config.mturk);
-
-   winston.info(winston_prefix, "Start polling Mturk for reviewable HITs.");
-
-   /**
-    * HITReviewable handler
-    */
-   mturk.on('HITReviewable', function (hitId) {
-
-      winston.info(winston_prefix, "New reviewable HIT : "+hitId);
-
-      // Retrieve the hit
-      mturk.HIT.get(hitId, function(err, hit) {
-         if(err) {
-            winston.error(winston_prefix, "Unable to get HIT "+hitId);
-            winston.error(winston_prefix, err);
-            return;
-         }
-         processHit(hit);
-      });
-
-   });
-
-
-
-   /**
-    * Process for one reviewable HIT
-    */
-   function processHit(hit) {
-
-      // TaskToken
-      var mturkShortToken;
-      if(hit.requesterAnnotation && hit.requesterAnnotation.taskToken) {
-         mturkShortToken = hit.requesterAnnotation.taskToken;
-      }
-      else {
-         winston.error(winston_prefix, "HIT without taskToken. Ignoring HIT.");
-         return;
-      }
-
-      processSwfHit(hit, mturkShortToken);
-   }
-
-   /**
-    * Process a valid SWF HIT
-    */
-   function processSwfHit(hit, mturkShortToken) {
-
-      var maxAssignments = parseInt(hit.maxAssignments, 10);
-
-      // Get Assignements
-      winston.info(winston_prefix, "Fetching HIT assignments...");
-      hit.getAssignments({}, function(err, numResults, totalNumResults, pageNumber, assignments) {
-
-         winston.info(winston_prefix, "Got assignements : ", numResults+" results", totalNumResults+" total results", "pageNumber: "+pageNumber);
-
-         if(err) {
-            winston.error(winston_prefix, "Unable to retrieve HIT assignments");
-            winston.error(winston_prefix, err);
-            return;
-         }
-
-         if(totalNumResults != maxAssignments) {
-            winston.info(winston_prefix, "Assignments not completed yet. Waiting for more. ("+totalNumResults+"/"+maxAssignments+") ");
-            return;
-         }
-
-         // TODO: fetch ALL assignements if needed !
-
-         completeHit(hit, mturkShortToken, assignments);
-
-     });
-
-   }
-
-
-   /**
-    * When a HIT is fully completed
-    */
-   function completeHit(hit, mturkShortToken, assignments) {
-
-      var maxAssignments = parseInt(hit.maxAssignments, 10);
-
-      // auto-approve all assignements with assignmentStatus === 'Submitted'
-      async.forEachSeries(assignments, function(assignment, cb) {
-         if(assignment.assignmentStatus === 'Submitted') {
-            winston.info(winston_prefix, "Approving assignment "+assignment.id);
-            assignment.approve("Thank you !", cb);
-         }
-         else {
-            cb();
-         }
-      }, function(err) {
-            
-            winston.info(winston_prefix, "All assignements approved !");
-
-            // results
-            var results = getResultsFromAssignments(assignments);
-            if(maxAssignments == 1) {
-               results = results[0];
-            }
-
-            /**
-             * Find the MturkTask object
-             */
-            winston.info(winston_prefix, "Loading task...");
-            MturkTask.findByShortToken(mturkShortToken, function(err, task) {
-
-               if(!task) {
-                  winston.warn(winston_prefix, "Task not found ! Disposing HIT...");
-                  mturk.HIT.dispose(hit.id, function() {
-                     winston.info(winston_prefix, "HIT disposed.");
-                  });
-                  return;
-               }
-
-               winston.info(winston_prefix, "Got task. Sending results to SWF...");
-
-               // Mark task has completed
-               task.respondCompleted(results, function(err) {
-
-                  if(err) {
-                    winston.error(winston_prefix, "SWF respondCompleted failed");
-                    winston.error(winston_prefix, err);
-                    return;
-                  }
-
-                  winston.info(winston_prefix, "Results sent to SWF ! Disposing HIT...");
-
-                  mturk.HIT.dispose(hit.id, function() {
-                     winston.info(winston_prefix, "HIT disposed.");
-                  });
-                  
-               });
-
-            });
-
-      });
-
-   }
-
-
-   /**
-    * Transforming the results from Mturk
-    */
-   function getResultsFromAssignments(assignments) {
-      var results = [];
-      assignments.forEach(function(assignment) {
-         var r = {};
-         var a = assignment.answer.QuestionFormAnswers.Answer;
-         if(!Array.isArray(a)) {
-           a = [a];
-         }
-         a.forEach(function(mturkAnswer) {
-            r[mturkAnswer.QuestionIdentifier] = mturkAnswer.FreeText;
-         });
-         results.push(r);
-      });
-      return results;
-   }
-
-
-};
