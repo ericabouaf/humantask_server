@@ -26,7 +26,7 @@ module.exports = function(app, redisClient, swfClient, moduleConfig) {
             return;
          }
 
-         req.task = task;
+         req.task = JSON.parse(task);
 
          next();
 
@@ -47,7 +47,7 @@ module.exports = function(app, redisClient, swfClient, moduleConfig) {
          return;
       }  
       
-      var input = req.task.config;
+      var input = req.task;
         
       if(input.template) {
          
