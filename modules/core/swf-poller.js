@@ -25,7 +25,7 @@ module.exports = function(config, swfClient, loadedModules) {
         var taskToken = activityTask.config.taskToken,
             taskConfig;
 
-        winston.info(winston_prefix, "Received new activityTask : "+taskToken.substr(0,30)+"...");
+        winston.info(winston_prefix, "Received new activity '"+activityTask.config.activityType.name+"' : "+taskToken.substr(0,30)+"...");
 
         // Validate the activityType
         if( !loadedModules[activityTask.config.activityType.name] ) {

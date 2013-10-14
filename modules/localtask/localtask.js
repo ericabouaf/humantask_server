@@ -4,7 +4,9 @@ var nodemailer = require('nodemailer'),
     querystring = require('querystring');
 
 
-var smtpTransport, _redisClient;
+var smtpTransport,
+   _redisClient,
+   _app;
 
 
 module.exports = {
@@ -27,6 +29,7 @@ module.exports = {
 
     start: function(app, redisClient, swfClient, moduleConfig) {
 
+      _app = app;
       _redisClient = redisClient;
 
       smtpTransport = nodemailer.createTransport("SMTP", moduleConfig.mailer_transport);
@@ -53,7 +56,7 @@ function sendNotification(notification, taskToken, config) {
 
 
       text: "Hello world",
-      html: "New task : <a href='http://" + config.server.host + ":" + config.server.port + "/localtask/activity/"+querystring.escape(taskToken)+"'>Click here to do the task !</a>"
+      html: "New task : <a href='http://" + _app.config.host + ":" + _app.config.port + "/localtask/activity/"+querystring.escape(taskToken)+"'>Click here to do the task !</a>"
    };
    
    // send mail with defined transport object

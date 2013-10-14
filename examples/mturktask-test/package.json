@@ -1,0 +1,5 @@
+{
+   "name" : "mturktask-test",
+   "private": true,
+   "main" : "./mturktask-test.js"
+}

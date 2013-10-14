@@ -1,0 +1,5 @@
+{
+   "name" : "localtask-test",
+   "private": true,
+   "main" : "./localtask-test.js"
+}

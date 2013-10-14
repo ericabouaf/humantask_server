@@ -26,6 +26,7 @@ module.exports = function(httpServerConfig) {
 
 
 	// start the server
+	app.config = httpServerConfig;
 	app.listen(httpServerConfig.port, httpServerConfig.host);
 
 	winston.info(winston_prefix, "Listening on http://"+httpServerConfig.host+":"+httpServerConfig.port);

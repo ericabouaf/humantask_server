@@ -4,11 +4,24 @@ var async = require('async'),
 
 var winston_prefix = "[Mturk Poller]";
 
+
+
+
+
 module.exports = function(app, redisClient, swfClient, moduleConfig) {
 
    var mturk = require('mturk')(moduleConfig);
 
    winston.info(winston_prefix, "Start polling Mturk for reviewable HITs.");
+
+
+  var findByShortToken = function(mturkShortToken, cb) {
+      redisClient.hget('mturk-shortener', mturkShortToken, function(err, taskToken) {
+        redisClient.get(taskToken, function(err, task) {
+          cb(err, task, taskToken);
+        });
+      });
+  };
 
    /**
     * HITReviewable handler
@@ -112,7 +125,7 @@ module.exports = function(app, redisClient, swfClient, moduleConfig) {
              * Find the MturkTask object
              */
             winston.info(winston_prefix, "Loading task...");
-            MturkTask.findByShortToken(mturkShortToken, function(err, task) {
+            findByShortToken(mturkShortToken, function(err, task, taskToken) {
 
                if(!task) {
                   winston.warn(winston_prefix, "Task not found ! Disposing HIT...");
@@ -125,7 +138,10 @@ module.exports = function(app, redisClient, swfClient, moduleConfig) {
                winston.info(winston_prefix, "Got task. Sending results to SWF...");
 
                // Mark task has completed
-               task.respondCompleted(results, function(err) {
+               swfClient.respondActivityTaskCompleted({
+                    "taskToken": taskToken,
+                    "result": JSON.stringify( results )
+                  }, function(err) {
 
                   if(err) {
                     winston.error(winston_prefix, "SWF respondCompleted failed");

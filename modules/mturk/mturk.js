@@ -7,14 +7,13 @@
 
 var querystring = require('querystring');
 
-var mturk, _redisClient;
+var mturk, _redisClient, _app;
 
 module.exports = {
 
     createTask: function (taskToken, config, cb) {
 
-      var that = this;
-      _redisClient.set(this.taskToken, JSON.stringify(this.config), function(err) {
+      _redisClient.set(taskToken, JSON.stringify(config), function(err) {
         if(err) { cb(err); return; }
 
 
@@ -22,12 +21,11 @@ module.exports = {
          * Create a HIT
          */
          var mturkParams = config.mturk,
-             price = new mturk.Price( String(mturkParams.reward), "USD"),
-             that = this;
+             price = new mturk.Price( String(mturkParams.reward), "USD");
 
-         var mturkShortToken = this.taskToken.substr(0,200);
+         var mturkShortToken = taskToken.substr(0,200);
 
-         _redisClient.hset('mturk-shortener', mturkShortToken, this.taskToken, function(err, results) {
+         _redisClient.hset('mturk-shortener', mturkShortToken, taskToken, function(err, results) {
 
            mturk.HITType.create(mturkParams.title, mturkParams.description, price, mturkParams.duration, mturkParams.options, function(err, hitType) {
 
@@ -35,7 +33,7 @@ module.exports = {
 
               var options = {maxAssignments: mturkParams.maxAssignments || 1},
                   lifeTimeInSeconds = 3600, // 1 hour
-                  questionXML = externalUrlXml("http://"+config.server.host+":"+config.server.port+"/mturk/"+querystring.escape(that.taskToken), 800);
+                  questionXML = externalUrlXml("http://"+_app.config.host+":"+_app.config.port+"/mturk/"+querystring.escape(taskToken), 800);
 
               mturk.HIT.create(hitType.id, questionXML, lifeTimeInSeconds, {
                  requesterAnnotation: JSON.stringify({taskToken: mturkShortToken })
@@ -61,6 +59,7 @@ module.exports = {
 
       mturk = require('mturk')(moduleConfig);
 
+      _app = app;
       _redisClient = redisClient;
 
       require('./http-server')(app, redisClient, swfClient, moduleConfig);

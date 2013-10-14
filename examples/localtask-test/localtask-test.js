@@ -1,31 +1,29 @@
+/**
+ * Simple localtask test
+ *
+ * To register the workflow:
+ *     swf-register "localtask-test" -k workflow
+ *
+ * Then, start a decider worker:
+ *     cd examples
+ *     swf-decider
+ *
+ * Start a workflow instance:
+ *     swf-start localtask-test
+ *
+ */
 
 if( has_workflow_just_started() ) {
   schedule({
     name: 'step1',
-    activity: 'localtask', /* or 'mturk' */
-
+    activity: 'localtask',
     input: {
-
-       mturk: {
-          title : "Vote on Text Improvement",
-          description : "Decide which two small paragraphs is closer to a goal.",
-          reward : 0.01,
-          duration: 3600, // 1 hour
-          maxAssignments : 1
-        },
-        
-
-       // or
-
         /*
         emailNotification: {
             to: "eric.abouaf@gmail.com",
             subject: "Ceci est un test !"
         },
         */
-
-
-
         "data": [{label: "this"},{label: "list"}, {label: "is"}, {label: "templated"}],
         template: "<h1>Label an image</h1>"+
                 "<ul>"+
@@ -44,9 +42,7 @@ if( has_workflow_just_started() ) {
                   "</fieldset>"
     }
   });
-
 }
-
 
 if( completed('step1') ) {
   stop({
