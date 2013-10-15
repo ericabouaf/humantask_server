@@ -1,0 +1,5 @@
+{
+   "name" : "textmaster-test",
+   "private": true,
+   "main" : "./textmaster-test.js"
+}

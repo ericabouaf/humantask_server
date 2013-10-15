@@ -1,115 +1,59 @@
 
+var textmaster = require('./lib.js').textmaster;
+
+var _redisClient;
+
 module.exports = {
 
-    createTask: function (taskToken, config, cb) {
+   createTask: function (taskToken, config, cb) {
 
+      // Create the project and the documents within
+      textmaster.create_project(config, function(err, results) {
+
+         if(err) {
+            console.log(err);
+            cb(err);
+            return;
+         }
+
+         var projectId = results.id;
+
+
+         // save the taskToken from the id of the textmaster project
+         _redisClient.hset('textmaster2tasktoken', projectId, taskToken, function(err, results) {
+
+            if(err) {
+               console.log(err);
+               cb(err);
+               return;
+            }
+
+            // Launch the project
+            textmaster.launch_project(projectId, function(err, results) {
+
+               //console.log(err, results);
+
+               cb(err, results);
+            });
+
+
+         });
+
+
+      });
        
    },
 
+   
+   start: function(app, redisClient, swfClient, moduleConfig) {
 
-    start: function(app, redisClient, swfClient, moduleConfig) {
+      _redisClient = redisClient;
+      
+      textmaster.setCredentials(moduleConfig.apikey, moduleConfig.apisecret);
 
-        // TODO: start poller
-
-
-
-        /*var textmaster = require('./textmaster.js').textmaster;
-
-        textmaster.setCredentials("xxxx", "xxxx");*/
-
-        /*textmaster.test(function(err, res) {
-          console.log(res);
-        });*/
-
-        /*textmaster.projects(function(err, res) {
-          console.log(res);
-        });*/
-
-        /*textmaster.documents('xxxx', function(err, res) {
-          console.log(JSON.stringify(res, null, 3) );
-        }); */
-
-
-
-    }
-
+      // Start the poller
+      require('./poller')(app, redisClient, swfClient, moduleConfig);
+   }
 
 };
 
-
-/*
-
-
-var request = require('request'),
-  crypto = require('crypto');
-
-
-var _apikey, _apisecret;
-
-var baseUrl = 'http://api.textmaster.com/v1/clients';
-
-var textmaster = exports.textmaster = {
-
-  setCredentials: function(apikey, apisecret) {
-    _apikey = apikey;
-    _apisecret = apisecret;
-  },
-
-
-  _request: function(conf, cb) {
-    var o = {};
-
-    for(var k in conf) {
-      if(conf.hasOwnProperty(k)) {
-        o[k] = conf[k];
-      }
-    }
-
-    o.headers = this._signature();
-
-    request(o, function(err, result) {
-      if(err) { cb(err); return; }
-      var res = JSON.parse(result.body);
-      cb(null, res);
-    });
-  },
-
-  _signature: function() {
-    var nowStr = (new Date()).toISOString().replace('T',' ').substr(0,19);
-
-    var shasum = crypto.createHash('sha1');
-    shasum.update(_apisecret + nowStr);
-
-    return {
-      "APIKEY": _apikey,
-      "DATE": nowStr,
-      "SIGNATURE": shasum.digest('hex')
-    };
-  },
-
-  test: function(cb) {
-    this._request({
-      method: 'GET',
-      url: 'http://api.textmaster.com/test'
-    }, cb);
-  },
-
-
-  projects: function(cb) {
-    this._request({
-      method: 'GET',
-      url: baseUrl + "/projects"
-    }, cb);
-  },
-
-  documents: function(project_id, cb) {
-    this._request({
-      method: 'GET',
-      url: baseUrl + "/projects/"+project_id+"/documents"
-    }, cb);
-  }
-
-};
-
-
-*/
