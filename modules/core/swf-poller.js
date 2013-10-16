@@ -19,9 +19,6 @@ module.exports = function(config, swfClient, loadedModules) {
       */
      activityPoller.on('activityTask', function (activityTask) {
 
-        // Re-poll immediatly
-        activityPoller.poll();
-
         var taskToken = activityTask.config.taskToken,
             taskConfig;
 
