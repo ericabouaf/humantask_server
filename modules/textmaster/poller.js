@@ -64,6 +64,9 @@ var TextmasterPoller = {
       winston.info(winston_prefix, "Polling for projects in_review...");
 
       textmaster.projects_inreview(function(err, res) {
+
+        if(err) { cb(err); return; }
+
          if(res.count != 0) {
             winston.info(winston_prefix, "Got "+res.count+" projects in_review !");
             //console.log(JSON.stringify(res, null, 3));

@@ -23,6 +23,8 @@ module.exports = function(app, redisClient, swfClient, moduleConfig) {
 
  	  redisClient.lrange('open', 0, 25, function(err, results) {
 
+        // TODO: err handling
+
         res.render('localtask/views/index', { 
           layout: 'localtask/views/layout',
           locals: { 

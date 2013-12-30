@@ -1,24 +1,23 @@
-#!/usr/bin/env node
+/**
+ * HTTP SERVER
+ */
 
 var express = require('express'),
     winston = require('winston'),
     expressLayouts = require('express-ejs-layouts'),
-    ejs = require('ejs');
+    ejs = require('ejs'),
+    path = require('path');
 
 var winston_prefix = "[HTTP Server]";
 
 
 module.exports = function(httpServerConfig) {
 
-	/**
-	 * HTTP SERVER
-	 */
-
 	var app = express();
 
 	app.configure(function(){
-	   app.use(express.static(__dirname + '/../../public'));
-	   app.set('views', __dirname + '/..');
+	   app.use(express.static( path.join(__dirname , '..', 'public')));
+	   app.set('views', path.join(__dirname , '..', 'modules') );
 	   app.set('view engine', 'ejs');
 	   app.use(expressLayouts);
 	   app.use(express.bodyParser());
