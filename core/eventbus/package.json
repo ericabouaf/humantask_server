@@ -1,7 +1,6 @@
 {
     "name": "eventbus",
     "main": "./eventbus.js",
-
     "plugin": {
         "consumes": [],
         "provides": [ "eventbus" ]

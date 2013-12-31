@@ -2,50 +2,52 @@ module.exports = [
 
     /**
      * Core Modules
+     *
+     * You should probably not remove any of them, except changing the options parameters
      */
+    { packagePath: './core/eventbus' },
+    { packagePath: './core/logger' },
+    { packagePath: './core/redis' },
     {
-        packagePath: './plugins/eventbus'
+        packagePath: './core/httpserver',
+        port: 3000,
+        host: 'localhost'
     },
+    { packagePath: './core/api' },
+
+
+    /**
+     * Local task modules
+     */
+
+    { packagePath: './core/localtask' },
+    { packagePath: './core/webhook-reporter' }
+    /* ,
     {
-        packagePath: './plugins/logger'
-    },
-    {
-        packagePath: './plugins/redis-client'
-    },
-    {
-        packagePath: './plugins/aws-swf-client'
-    },
-    {
-        packagePath: './plugins/swf-poller',
+        packagePath: './plugins/mailer',
+        service: "Gmail",
+        auth: {
+            user: "xxxxx@gmail.com",
+            pass: "xxxxx"
+        }
+    }*/
+    // ,{ packagePath: './plugins/newtask-email-notification' }*/
+    // ,{ packagePath: './plugins/notifo-notification' }*/
+
+    /**
+     * Optional plugins
+     */
+
+    /*,{
+        packagePath: './plugins/aws-swf-provider',
         domain: 'aws-swf-test-domain',
         taskList: {name: "aws-swf-tasklist" },
         identity: 'HumanTask server'
-    },
-    {
-        packagePath: './plugins/http-server',
-        port: 3000,
-        host: 'localhost'
-    }
-
-    /**
-     * Task Modules
-     */
-    /*,{
-        packagePath: './plugins/localtask',
-
-        // For email notifications
-        mailer_transport: {
-            service: "Gmail",
-            auth: {
-                user: "xxx",
-                pass: "xxx"
-            }
-        }
     }*/
 
     // Amazon Mechanical Turk
     /*,{
-        packagePath: './plugins/mturk',
+        packagePath: './plugins/mturk-performer',
 
         url: "https://mechanicalturk.sandbox.amazonaws.com",
         accessKeyId: "xxx",
@@ -57,8 +59,8 @@ module.exports = [
 
     // Textmaster
     /*,{
-        packagePath: './plugins/textmaster',
-        apikey: "xxxx",
-        apisecret: "xxxx"
+        packagePath: './plugins/textmaster-performer',
+        apikey: "xxxxxx",
+        apisecret: "xxxxx"
     }*/
 ];

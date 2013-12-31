@@ -4,18 +4,6 @@
     "main" : "./server.js",
     "private": true,
     "dependencies": {
-        "redis": "0.8.4",
-        "nodemailer": "0.3.20",
-        "express": "3.0.6",
-        "mu2": "0.5.17",
-        "ejs": "0.8.3",
-        "express-ejs-layouts": "0.3.1",
-        "aws-swf": "4.0.0",
-        "async": "0.1.22",
-        "mturk": "git://github.com/neyric/mturk.git",
-        "aws-sdk": "1.6.0",
-        "winston": "0.7.2",
-        "request": "2.27.0",
         "architect": "0.1.10"
     }
 }

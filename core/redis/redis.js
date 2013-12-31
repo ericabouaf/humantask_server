@@ -9,6 +9,6 @@ module.exports = function(options, imports, register) {
     var redisClient = redis.createClient();
     
     register(null, {
-        "redis-client": redisClient
+        "redis": redisClient
     });
 };

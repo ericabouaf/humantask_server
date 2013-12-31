@@ -3,10 +3,12 @@
     "main": "./localtask.js",
 
     "dependencies": {
+        "ejs": "0.8.3",
+        "mu2": "0.5.17"
     },
 
     "plugin": {
-        "consumes": [],
+        "consumes": [ "httpserver", "redis", "eventbus", "mailer", "logger" ],
         "provides": [ "localtask" ]
     }
 }

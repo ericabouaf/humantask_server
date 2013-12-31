@@ -1,3 +1,6 @@
+/**
+ * Provides a global event bus through the process (enables loose coupling)
+ */
 var EventEmitter = require('events').EventEmitter;
 
 module.exports = function(options, imports, register) {

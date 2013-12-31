@@ -1,0 +1,13 @@
+{
+    "name": "redis",
+    "main": "./redis.js",
+
+    "dependencies": {
+        "redis": "0.8.4"
+    },
+
+    "plugin": {
+        "consumes": [],
+        "provides": [ "redis" ]
+    }
+}

@@ -1,0 +1,15 @@
+{
+    "name": "mturk",
+    "main": "./mturk.js",
+
+    "dependencies": {
+        "async": "0.1.22",
+        "mu2": "0.5.17",
+        "mturk": "git://github.com/neyric/mturk.git"
+    },
+
+    "plugin": {
+        "consumes": [],
+        "provides": [ "mturk" ]
+    }
+}

@@ -1,0 +1,13 @@
+{
+    "name": "aws-swf-provider",
+    "main": "./aws-swf-provider.js",
+
+    "dependencies": {
+        "aws-swf": "4.0.0"
+    },
+
+    "plugin": {
+        "consumes": [ ],
+        "provides": [ "aws-swf-provider" ]
+    }
+}

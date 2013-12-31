@@ -1,0 +1,13 @@
+{
+    "name": "mailer",
+    "main": "./mailer.js",
+
+    "dependencies": {
+        "nodemailer": "0.3.20"
+    },
+
+    "plugin": {
+        "consumes": [ "logger" ],
+        "provides": [ "mailer" ]
+    }
+}

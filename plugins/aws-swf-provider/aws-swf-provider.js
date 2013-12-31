@@ -7,12 +7,59 @@ var winston_prefix = "[SWF Poller]";
 
 module.exports = function(options, imports, register) {
 
-  var swfClient = imports["aws-swf-client"],
-      eventbus = imports.eventbus;
+  var eventbus = imports.eventbus;
 
   var loadedModules = []; // ?
 
+  var swfClient = swf.createClient(options);
+
+
+
+
+  eventbus.on('taskCompleted', function(token, responseData) {
+    
+      /*swfClient.respondActivityTaskCompleted({
+         "taskToken": req.param('taskToken'),
+         "result": JSON.stringify( req.body )
+      },  function(err) {*/
+
+         /*if(err) {
+
+            logger.error(logger_prefix, "SWF respondCompleted failed");
+            logger.error(logger_prefix, err);
+
+            res.render('core/localtask/views/error', { 
+                layout: 'core/localtask/views/layout',
+               locals: { 
+                  error: err,
+                  activityTask: null,
+                  taskToken: "no"
+               } 
+            });
+
+
+            // mark local task as done !
+            removeFromOpen(req.param('taskToken'), function(err) {
+                if(err) {
+                  logger.error(logger_prefix, "Unable to mark task as done !");
+                  logger.error(logger_prefix, err);
+                  return;
+                }
+                logger.info(logger_prefix, "Task marked as done !");
+             });
+
+            return;
+         }
+
+         logger.info(logger_prefix, "Results sent to SWF ! Marking local task as done...");*/
+  }
+
+
+
+
+
    var activityPoller = new swf.ActivityPoller(options, swfClient);
+
 
    /**
     * New Task handler
@@ -81,7 +128,7 @@ module.exports = function(options, imports, register) {
    });*/
 
     register(null, {
-        "swf-poller": activityPoller
+        "aws-swf-provider": activityPoller
     });
 
 };

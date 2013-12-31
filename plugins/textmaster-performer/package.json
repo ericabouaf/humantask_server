@@ -1,0 +1,13 @@
+{
+    "name": "textmaster",
+    "main": "./textmaster.js",
+
+    "dependencies": {
+        "request": "2.27.0"
+    },
+
+    "plugin": {
+        "consumes": [],
+        "provides": [ "textmaster" ]
+    }
+}

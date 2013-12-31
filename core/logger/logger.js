@@ -1,5 +1,5 @@
 /**
- * Logger
+ * Logger using winston
  */
 
 var winston = require('winston');
