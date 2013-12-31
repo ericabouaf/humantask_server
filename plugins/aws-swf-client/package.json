@@ -1,0 +1,12 @@
+{
+    "name": "aws-swf-client",
+    "main": "./aws-swf-client.js",
+
+    "dependencies": {
+    },
+
+    "plugin": {
+        "consumes": [],
+        "provides": [ "aws-swf-client" ]
+    }
+}

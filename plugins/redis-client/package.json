@@ -1,0 +1,12 @@
+{
+    "name": "redis-client",
+    "main": "./redis-client.js",
+
+    "dependencies": {
+    },
+
+    "plugin": {
+        "consumes": [],
+        "provides": [ "redis-client" ]
+    }
+}

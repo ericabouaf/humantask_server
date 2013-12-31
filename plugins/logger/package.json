@@ -1,0 +1,13 @@
+{
+    "name": "logger",
+    "main": "./logger.js",
+
+    "dependencies": {
+        "winston": "0.7.2"
+    },
+
+    "plugin": {
+        "consumes": [],
+        "provides": [ "logger" ]
+    }
+}

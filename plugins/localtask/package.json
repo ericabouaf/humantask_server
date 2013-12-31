@@ -1,0 +1,12 @@
+{
+    "name": "localtask",
+    "main": "./localtask.js",
+
+    "dependencies": {
+    },
+
+    "plugin": {
+        "consumes": [],
+        "provides": [ "localtask" ]
+    }
+}

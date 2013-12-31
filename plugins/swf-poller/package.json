@@ -1,0 +1,12 @@
+{
+    "name": "swf-poller",
+    "main": "./swf-poller.js",
+
+    "dependencies": {
+    },
+
+    "plugin": {
+        "consumes": [ "aws-swf-client" ],
+        "provides": [ "swf-poller" ]
+    }
+}

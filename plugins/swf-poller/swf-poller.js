@@ -4,9 +4,15 @@ var swf = require('aws-swf'),
 
 var winston_prefix = "[SWF Poller]";
 
-module.exports = function(config, swfClient, loadedModules) {
 
-   var activityPoller = new swf.ActivityPoller(config, swfClient);
+module.exports = function(options, imports, register) {
+
+  var swfClient = imports["aws-swf-client"],
+      eventbus = imports.eventbus;
+
+  var loadedModules = []; // ?
+
+   var activityPoller = new swf.ActivityPoller(options, swfClient);
 
    /**
     * New Task handler
@@ -19,28 +25,34 @@ module.exports = function(config, swfClient, loadedModules) {
       winston.info(winston_prefix, "Received new activity '"+activityTask.config.activityType.name+"' : "+taskToken.substr(0,30)+"...");
 
       // Validate the activityType
-      if( !loadedModules[activityTask.config.activityType.name] ) {
+      /*if( !loadedModules[activityTask.config.activityType.name] ) {
          winston.error(winston_prefix, "activityTask type '"+activityTask.config.activityType.name+"' is not handled by any module. Ignoring task.");
          // TODO: respond Failed ?
          return;
-      }
+      }*/
 
       // parsing input JSON
-      try {
+      /*try {
          taskConfig = JSON.parse(activityTask.config.input);
       }
       catch(ex) {
          winston.error(winston_prefix, "activityTask input is not valid JSON. Ignoring task.");
          // TODO: respond Failed ?
          return;
-      }
+      }*/
 
 
 
       // Creating the task
       winston.info(winston_prefix, "creating task...");
-      var module = loadedModules[activityTask.config.activityType.name];
-      var createTask = module.createTask;
+      var activityTypeName = activityTask.config.activityType.name;
+
+      var hasListeners = eventbus.emit(activityTypeName, activityTask.config.input);
+
+      //var module = loadedModules[];
+      // TODO: publish an event instead !
+
+      /*var createTask = module.createTask;
 
       createTask(taskToken, taskConfig, function(err, results) {
          if(err) {
@@ -49,7 +61,7 @@ module.exports = function(config, swfClient, loadedModules) {
             return;
          }
          winston.info(winston_prefix, "Task created !");
-      });
+      });*/
 
    });
 
@@ -67,6 +79,10 @@ module.exports = function(config, swfClient, loadedModules) {
       console.log('Got SIGINT ! Stopping activity poller after this request...please wait...');
       activityPoller.stop();
    });*/
+
+    register(null, {
+        "swf-poller": activityPoller
+    });
 
 };
 
