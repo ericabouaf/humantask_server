@@ -3,7 +3,7 @@
     "main": "./api.js",
 
     "plugin": {
-        "consumes": [ "httpserver", "eventbus" ],
+        "consumes": [ "httpserver", "eventbus", "logger" ],
         "provides": [ "api" ]
     }
 }

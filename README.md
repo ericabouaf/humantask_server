@@ -53,9 +53,16 @@ Performers :
 POST /task
 
     {
-      "type": "local",
       "data": [{"label": "this"},{"label": "list"}, {"label": "is"}, {"label": "templated"}],
       "template": "HTML for this task. Use mustache templating with the data above.",
+
+      "provider": {
+        "type": "myApp"
+      },
+
+      "performer": {
+        "type": "local"
+      }
 
       "webhook-reporter": "http://requestb.in/scdzhysc"
     }

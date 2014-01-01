@@ -1,0 +1,25 @@
+{
+ "data": [{"label": "this"},{"label": "list"}, {"label": "is"}, {"label": "templated"}],
+ "template": "HTML for this task. Use mustache templating with the data above.<br> Enter your name: <input name='myname'/><br> <button type='submit' class='btn'>Submit</button>",
+
+ "provider": {
+   "type": "myApp"
+ },
+
+ "performer": {
+   "type": "local"
+ },
+
+ "webhook-reporter": "http://requestb.in/scdzhysc",
+
+ "emailNotification": {
+   "from": "eric.abouaf@gmail.com",
+   "to": "eric.abouaf@gmail.com",
+   "subject": "New super task !"
+ },
+
+ "pushoverNotification": {
+    "user": "ujUEeMvKksJ6DXEufz8NjSHMRpvm4Z"
+ }
+
+}

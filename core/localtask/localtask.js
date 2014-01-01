@@ -3,9 +3,7 @@ var mu = require('mu2'),
     ejs = require('ejs'),
     querystring = require('querystring');
 
-
 var logger_prefix = "[localtask]";
-
 
 module.exports = function(options, imports, register) {
 
@@ -18,18 +16,26 @@ module.exports = function(options, imports, register) {
    /**
     * On 'localtask' event, store the task
     */
-   eventbus.on('localtask', function(taskToken, config) {
-      redisClient.set(taskToken, JSON.stringify(config), function(err) {
-         if(err) {
-         }
-         else {
+   eventbus.on('newtask', function(task) {
+      if(!!task.performer && task.performer.type === 'local') {
 
-         }
-      });
+         logger.info(logger_prefix, "Received new localtask: ", task.uuid);
+
+         redisClient.set(task.uuid, JSON.stringify(task), function(err) {
+            // TODO: err handling
+            redisClient.rpush('open', task.uuid, function(err) {
+               // TODO: err handling
+               logger.info(logger_prefix, "Saved !", err);
+
+               var taskURL = 'http://'+app.config.host+':'+app.config.port+'/localtask/activity/'+task.uuid;
+               eventbus.emit('taskCreated', task, taskURL);
+            });
+         });
+      }
    });
 
 
-   
+
    app.locals.querystring_escape = function(name) {
       return querystring.escape(name);
    };
@@ -41,14 +47,14 @@ module.exports = function(options, imports, register) {
       redisClient.lrange('open', 0, 25, function(err, results) {
 
          // TODO: err handling
-         res.render('core/localtask/views/index', { 
+         res.render('core/localtask/views/index', {
             layout: 'core/localtask/views/layout',
-            locals: { 
+            locals: {
                keys: results,
                taskToken: ""
             }
          });
-   
+
       });
    });
 
@@ -58,9 +64,9 @@ module.exports = function(options, imports, register) {
     * Task finished
     */
    app.get('/localtask/finished', function(req, res) {
-      res.render('core/localtask/views/finished', { 
+      res.render('core/localtask/views/finished', {
         layout: 'core/localtask/views/layout',
-         locals: { 
+         locals: {
             taskToken: ""
          }
       });
@@ -76,11 +82,11 @@ module.exports = function(options, imports, register) {
       redisClient.get( req.param('taskToken') , function(err, task) {
 
          if(!!err || task === null) {
-            res.render('error', { 
-               locals: { 
+            res.render('error', {
+               locals: {
                   error: err,
                   taskToken: ""
-               } 
+               }
             });
             return;
          }
@@ -101,20 +107,20 @@ module.exports = function(options, imports, register) {
 
 
    function display_activity(req, res, layout) {
-     
+
       if(!req.task) {
-         res.render('unavailable', { 
-            locals: { 
+         res.render('unavailable', {
+            locals: {
                taskToken: ""
             }
          });
          return;
-      }  
-      
+      }
+
       var input = req.task;
-        
+
       if(input.template) {
-         
+
          var stream = mu.renderText(input.template, input, {});
 
          var str = "";
@@ -129,19 +135,19 @@ module.exports = function(options, imports, register) {
                res.send(body);
             });
          });
-           
+
       }
       else {
          // Render the default task view
          res.render('core/localtask/views/defaultTaskView', {
             layout: 'core/localtask/views/layout',
-            locals: { 
+            locals: {
                taskToken: querystring.escape(req.param('taskToken')),
                activityTask: req.task
-            } 
+            }
          });
-      }   
-     
+      }
+
    }
 
    app.get('/localtask/activity/:taskToken', taskFromToken, function(req, res) {
@@ -158,10 +164,10 @@ module.exports = function(options, imports, register) {
          if (err) { cb(err); return; }
          redisClient.rpush('done', taskToken , cb);
       });
-   };
+   }
 
    app.post('/localtask/:taskToken/completed', taskFromToken, function(req, res){
-      
+
       logger.info(logger_prefix, "Got task. Sending the results...");
 
       var taskToken = req.param('taskToken');
@@ -174,6 +180,9 @@ module.exports = function(options, imports, register) {
               return;
             }
             logger.info(logger_prefix, "Task marked as done !");
+
+            req.task.results = req.body;
+            eventbus.emit('taskCompleted', taskToken, req.task);
        });
 
        res.redirect('/localtask/finished');

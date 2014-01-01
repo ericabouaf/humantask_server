@@ -1,9 +1,13 @@
 {
-    "name": "webhook-reporter",
-    "main": "./webhook-reporter.js",
+   "name": "webhook-reporter",
+   "main": "./webhook-reporter.js",
 
-    "plugin": {
-        "consumes": [ "eventbus", "logger" ],
-        "provides": [ "webhook-reporter" ]
-    }
+   "dependencies": {
+      "request": "2.27.0"
+   },
+
+   "plugin": {
+      "consumes": [ "eventbus", "logger" ],
+      "provides": [ "webhook-reporter" ]
+   }
 }

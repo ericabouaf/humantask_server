@@ -1,0 +1,9 @@
+{
+    "name": "newtask-email-notification",
+    "main": "./newtask-email-notification.js",
+
+    "plugin": {
+        "consumes": [ "logger", "eventbus", "mailer" ],
+        "provides": [ "newtask-email-notification" ]
+    }
+}

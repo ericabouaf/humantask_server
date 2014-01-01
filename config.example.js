@@ -24,15 +24,15 @@ module.exports = [
     { packagePath: './core/webhook-reporter' }
     /* ,
     {
-        packagePath: './plugins/mailer',
+        packagePath: './core/mailer',
         service: "Gmail",
         auth: {
             user: "xxxxx@gmail.com",
             pass: "xxxxx"
         }
     }*/
-    // ,{ packagePath: './plugins/newtask-email-notification' }*/
-    // ,{ packagePath: './plugins/notifo-notification' }*/
+    // ,{ packagePath: './core/newtask-email-notification' }
+    // ,{ packagePath: './plugins/notifo-notification' }
 
     /**
      * Optional plugins

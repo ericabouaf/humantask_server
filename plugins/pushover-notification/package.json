@@ -1,0 +1,13 @@
+{
+    "name": "pushover-notification",
+    "main": "./pushover-notification.js",
+
+    "dependencies": {
+        "pushover-notifications": "0.1.6"
+    },
+
+    "plugin": {
+        "consumes": [ "logger", "eventbus" ],
+        "provides": [ "pushover-notification" ]
+    }
+}
