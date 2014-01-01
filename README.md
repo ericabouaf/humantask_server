@@ -1,101 +1,79 @@
-# HumanTask server for SWF
+# MuTaskHub
+
+MuTaskHub is a webserver that simplifies *microtasks* integration into your application.
+
+Microtasks are HTML/CSS/JS documents containing a form that a human has to fill to complete the task.
+
+Here is the basic sequence diagram for MuTaskHub :
+
+````
+    Your Application             MuTaskHub                  Someone
+     (Task Provider)                                    (Task Performer)
+    ================             =========                  =======
+           |                         |                         |
+  1. API call to MuTask -------> Store Task                    |
+           |                         |                         |
+           |                2.Send Notifications ------------> |
+           |                         |                         |
+           |                         |  <--------------> 3. Fetch Task
+           |                         |                         |
+           |                  Store results <----------- 4. Perform Task
+           |                         |                         |
+           |  <-------------- 5. Send results                  |
+           |                         |                         |
+````
 
 
-HumanTask server makes it easier to create 'Human' activities for Amazon Simple Workflow (SWF) Web Service.
+## Advantages
+
+ * Using MuTaskHub frees your application from handling the logic of human tasks. You can just consider them as delayed/asynchronous jobs
+
+ * You can easily switch performers, between the local task mode and Amazon Mechanical Turk for example. Is is extremely useful when developping Mechanical Turk workflows.
+
+ * The plugin architecture let's you add "performers" easily (new market places, etc...)
 
 
-## Description
+## Existing Plugins
 
-HumanTask Server is a SWF Activity Poller, which manages the *humantask* ActivityType.
-
-The activities are stored and can be performed by humans through a Web interface.
-
-Two kinds of human activities are available :
-
- * "Local" tasks : free Microtasks served through HTTP, which can be done by yourself, colleagues, friends, ... anyone with the URL.
- * "Mechanical Turk" tasks : Microtasks sent on the Amazon Mechanical Turk platform (Mturk).
+The following plugins are included in the distribution :
 
 
-## Example :
+Providers :
 
-Local Task :
+ * aws-swf-provider: Amazon SimpleWorkflow activity worker
 
-    {
-      type: 'local',
-      data: [{label: "this"},{label: "list"}, {label: "is"}, {label: "templated"}],
-      template: "HTML for this task. Use mustache templating with the data above."
-    }
+Performers :
 
-Mechanical Turk task :
-
-    {
-    	type: 'mturk',
-    	mturk: {
-        	title : "Vote on Text Improvement",
-         	description : "Decide which two small paragraphs is closer to a goal.",
-         	reward : 0.01,  // $
-         	duration: 3600, // 1 hour
-         	maxAssignments : 1
-      },
-      data: [{label: "this"},{label: "list"}, {label: "is"}, {label: "templated"}],
-      template: "HTML for this task. Use mustache templating with the data above."
-    }
-
-This configuration must be sent by a SWF decider, encoded in JSON into the activity "input" field (limited to 65k)
+ * mturk-performer: Runs the microtasks on the Amazon Mechanical Turk platform
+ * textmaster-performer: Translation or content creation on TextMaster
 
 
-## Internal Components
+## Usage Example
 
-
-First, the SWF Poller :
-
- * Polls for new activity tasks, and store them into redis.
- * For 'local' tasks, we send email notifications with the URL of the task.
- * For 'mturk' tasks, we send the task to Mechanical Turk.
-
-
-The Mturk poller :
-
- * Polls Mturk for submitted assignments
- * When all assignments are submitted, dispose of the HIT, and sends results to SWF
-
-
-The HTTP server :
-
- * Serve tasks through HTTP
- * For 'local' tasks, sends results to SWF
- * Mturk tasks are served, but the results are first sent to Mturk
-
-
-## Important considerations
-
-
- * Mturk task are created using an ExternalURL (iframe). The HTTP server must be publicly accessible !
-
-
- * Watch your SWF Timeouts ! Human tasks can take a long time... If you don't handle timeouts in your SWF workflow, it's best to diable them all :
+POST /task
 
     {
-       // No timeout
-       heartbeatTimeout: "NONE",
-       scheduleToCloseTimeout: "NONE",
-       scheduleToStartTimeout: "NONE",
-       startToCloseTimeout: "NONE"
+      "type": "local",
+      "data": [{"label": "this"},{"label": "list"}, {"label": "is"}, {"label": "templated"}],
+      "template": "HTML for this task. Use mustache templating with the data above.",
+
+      "webhook-reporter": "http://requestb.in/scdzhysc"
     }
+
+
 
 
 ## Requirements
 
  * Node.JS
  * Redis
- * AWS account (using Mechanical Turk & Simple Workflow)
 
 
-## Installation
+## Running
 
- * clone the git repo (or download) humantask_server
- * npm install
+ * clone the git repo (or download)
+ * run install.sh (simply runs npm install on every core plugin)
  * start redis server
- * edit config.js
- * node server.js
-
+ * copy config.example.js to config.js
+ * edit config.js with your settings
+ * node start.js
