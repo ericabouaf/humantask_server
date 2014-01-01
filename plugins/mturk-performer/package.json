@@ -5,11 +5,13 @@
     "dependencies": {
         "async": "0.1.22",
         "mu2": "0.5.17",
-        "mturk": "git://github.com/neyric/mturk.git"
+        "ejs": "0.8.3",
+        "mturk": "git://github.com/neyric/mturk.git",
+        "async": "0.2.x"
     },
 
     "plugin": {
-        "consumes": [],
+        "consumes": [ "httpserver", "redis", "eventbus", "logger" ],
         "provides": [ "mturk" ]
     }
 }

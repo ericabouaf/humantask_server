@@ -1,5 +1,5 @@
 /**
- *
+ * Pushover notification
  */
 
 var push = require( 'pushover-notifications' );
