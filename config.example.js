@@ -22,21 +22,27 @@ module.exports = [
 
     { packagePath: './core/localtask' },
     { packagePath: './core/webhook-reporter' }
-    /* ,
-    {
+
+    , {
         packagePath: './core/mailer',
         service: "Gmail",
         auth: {
-            user: "xxxxx@gmail.com",
-            pass: "xxxxx"
+            user: "xxxxxxx",
+            pass: "xxxxxxx"
         }
-    }*/
-    // ,{ packagePath: './core/newtask-email-notification' }
-    // ,{ packagePath: './plugins/notifo-notification' }
+    }
+    ,{ packagePath: './core/newtask-email-notification' }
 
     /**
      * Optional plugins
      */
+
+
+    /*,{
+      packagePath: './plugins/pushover-notification',
+      apptoken: "xxxxxxx"
+    }*/
+
 
     /*,{
         packagePath: './plugins/aws-swf-provider',
@@ -50,8 +56,8 @@ module.exports = [
         packagePath: './plugins/mturk-performer',
 
         url: "https://mechanicalturk.sandbox.amazonaws.com",
-        accessKeyId: "xxx",
-        secretAccessKey: "xxxx",
+        accessKeyId: "xxxxxx",
+        secretAccessKey: "xxxxxx",
         region: "us-east-1",
         receptor: { port: 8080, host: undefined },
         poller: { frequency_ms: 60000 }
