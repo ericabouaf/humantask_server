@@ -1,9 +1,13 @@
 {
-    "name": "api",
-    "main": "./api.js",
+   "name": "api",
+   "main": "./api.js",
 
-    "plugin": {
-        "consumes": [ "httpserver", "eventbus", "logger" ],
-        "provides": [ "api" ]
-    }
+   "dependencies": {
+      "node-uuid": "1.4.1"
+   },
+
+   "plugin": {
+      "consumes": [ "httpserver", "eventbus", "logger" ],
+      "provides": [ "api" ]
+   }
 }

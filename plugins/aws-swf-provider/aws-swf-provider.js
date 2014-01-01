@@ -1,125 +1,78 @@
 
 var swf = require('aws-swf'),
-    winston = require('winston');
+    uuid = require('node-uuid');
 
-var winston_prefix = "[SWF Poller]";
+var logger_prefix = "[aws-swf-provider]";
 
 
 module.exports = function(options, imports, register) {
 
-  var eventbus = imports.eventbus;
+   var eventbus = imports.eventbus,
+       logger = imports.logger;
 
-  var loadedModules = []; // ?
-
-  var swfClient = swf.createClient(options);
-
-
-
-
-  eventbus.on('taskCompleted', function(token, responseData) {
-    
-      /*swfClient.respondActivityTaskCompleted({
-         "taskToken": req.param('taskToken'),
-         "result": JSON.stringify( req.body )
-      },  function(err) {*/
-
-         /*if(err) {
-
-            logger.error(logger_prefix, "SWF respondCompleted failed");
-            logger.error(logger_prefix, err);
-
-            res.render('core/localtask/views/error', { 
-                layout: 'core/localtask/views/layout',
-               locals: { 
-                  error: err,
-                  activityTask: null,
-                  taskToken: "no"
-               } 
-            });
-
-
-            // mark local task as done !
-            removeFromOpen(req.param('taskToken'), function(err) {
-                if(err) {
-                  logger.error(logger_prefix, "Unable to mark task as done !");
-                  logger.error(logger_prefix, err);
-                  return;
-                }
-                logger.info(logger_prefix, "Task marked as done !");
-             });
-
-            return;
-         }
-
-         logger.info(logger_prefix, "Results sent to SWF ! Marking local task as done...");*/
-  }
-
-
-
-
-
-   var activityPoller = new swf.ActivityPoller(options, swfClient);
+   var swfClient = swf.createClient(options);
 
 
    /**
-    * New Task handler
+    * Task completed handler
     */
+   eventbus.on('taskCompleted', function(token, task) {
+      if(!!task.provider && task.provider.type === 'aws-swf') {
+         swfClient.respondActivityTaskCompleted({
+            taskToken: task.provider.taskToken,
+            result: JSON.stringify( task.results )
+         }, function(err) {
+            if(err) {
+               logger.error(logger_prefix, "SWF respondCompleted failed", err);
+            }
+            else {
+               logger.info(logger_prefix, "Results sent to SWF ! Marking local task as done...");
+            }
+         });
+      }
+   });
+
+
+   /**
+    * Activity poller
+    */
+   var activityPoller = new swf.ActivityPoller(options, swfClient);
+
    activityPoller.on('activityTask', function (activityTask) {
 
       var taskToken = activityTask.config.taskToken,
+          activityType = activityTask.config.activityType.name,
           taskConfig;
 
-      winston.info(winston_prefix, "Received new activity '"+activityTask.config.activityType.name+"' : "+taskToken.substr(0,30)+"...");
-
-      // Validate the activityType
-      /*if( !loadedModules[activityTask.config.activityType.name] ) {
-         winston.error(winston_prefix, "activityTask type '"+activityTask.config.activityType.name+"' is not handled by any module. Ignoring task.");
-         // TODO: respond Failed ?
-         return;
-      }*/
+      logger.info(logger_prefix, "Received new activity '"+activityType+"' : "+taskToken.substr(0,30)+"...");
 
       // parsing input JSON
-      /*try {
+      try {
          taskConfig = JSON.parse(activityTask.config.input);
       }
       catch(ex) {
-         winston.error(winston_prefix, "activityTask input is not valid JSON. Ignoring task.");
+         logger.error(logger_prefix, "activityTask input is not valid JSON. Ignoring task.");
          // TODO: respond Failed ?
          return;
-      }*/
+      }
 
-
+      // Setup the task structure :
+      task.uuid = uuid.v4();
+      taskConfig.provider = {
+         type: 'aws-swf',
+         taskToken: taskToken
+      };
 
       // Creating the task
-      winston.info(winston_prefix, "creating task...");
-      var activityTypeName = activityTask.config.activityType.name;
-
-      var hasListeners = eventbus.emit(activityTypeName, activityTask.config.input);
-
-      //var module = loadedModules[];
-      // TODO: publish an event instead !
-
-      /*var createTask = module.createTask;
-
-      createTask(taskToken, taskConfig, function(err, results) {
-         if(err) {
-            winston.error(winston_prefix, "Unable to create task !");
-            winston.error(err);
-            return;
-         }
-         winston.info(winston_prefix, "Task created !");
-      });*/
-
+      eventbus.emit('newtask', task);
    });
 
-   /**
-    * Polling message
-    */
    activityPoller.on('poll', function(d) {
-      winston.info(winston_prefix, "polling for activity tasks...", d);
+      logger.info(logger_prefix, "polling for activity tasks...", d);
    });
 
    activityPoller.start();
+
 
    // on SIGINT event, close the poller properly
    /*process.on('SIGINT', function () {
@@ -127,9 +80,6 @@ module.exports = function(options, imports, register) {
       activityPoller.stop();
    });*/
 
-    register(null, {
-        "aws-swf-provider": activityPoller
-    });
+   register(null, { "aws-swf-provider": {} });
 
 };
-

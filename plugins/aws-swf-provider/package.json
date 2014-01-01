@@ -1,13 +1,14 @@
 {
-    "name": "aws-swf-provider",
-    "main": "./aws-swf-provider.js",
+   "name": "aws-swf-provider",
+   "main": "./aws-swf-provider.js",
 
-    "dependencies": {
-        "aws-swf": "4.0.0"
-    },
+   "dependencies": {
+      "aws-swf": "4.0.0",
+      "node-uuid": "1.4.1"
+   },
 
-    "plugin": {
-        "consumes": [ ],
-        "provides": [ "aws-swf-provider" ]
-    }
+   "plugin": {
+      "consumes": [ "eventbus", "logger" ],
+      "provides": [ "aws-swf-provider" ]
+   }
 }
