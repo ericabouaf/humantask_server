@@ -12,7 +12,6 @@ module.exports = function(options, imports, register) {
    var app = imports.httpserver.app,
        redisClient = imports.redis,
        eventbus = imports.eventbus,
-       mailer = imports.mailer,
        logger = imports.logger;
 
 
