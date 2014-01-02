@@ -165,13 +165,6 @@ module.exports = function(options, imports, register) {
       });
 
       activityPoller.start();
-
-      // on SIGINT event, close the poller properly
-      process.on('SIGINT', function () {
-         logger.info(logger_prefix, 'Got SIGINT ! Stopping activity poller after this request...please wait...');
-         activityPoller.stop();
-      });
-
    }
 
 
