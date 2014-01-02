@@ -26,10 +26,25 @@ It allows to integrate human microtasks into any SWF workflow. (LocalTasks, Mech
     }
 ````
 
- * Install the dependencies
 
-    $ cd plugins/aws-swf-provider
-    $ npm install
+
+## Usage
+
+
+When you create the SWF activity, the *'input' field must be encoded in JSON* :
+
+
+````json
+{
+ "data": [{"label": "this"},{"label": "list"}, {"label": "is"}, {"label": "templated"}],
+ "template": "HTML for this task. Use mustache templating with the data above.<br> Enter your name: <input name='myname'/><br> <button type='submit' class='btn'>Submit</button>",
+
+ "performer": {
+   "type": "local"
+ }
+
+}
+````
 
 
 
@@ -46,23 +61,3 @@ Human tasks can take a long time... The default SWF timeouts should be disabled 
         "defaultTaskStartToCloseTimeout": "NONE",
     }
 ````
-
-
-## Usage
-
-
-When you create the SWF activity, the *'input' field must be encoded in JSON* :
-
-
-````
-{
- "data": [{"label": "this"},{"label": "list"}, {"label": "is"}, {"label": "templated"}],
- "template": "HTML for this task. Use mustache templating with the data above.<br> Enter your name: <input name='myname'/><br> <button type='submit' class='btn'>Submit</button>",
-
- "performer": {
-   "type": "local"
- }
-
-}
-````
-

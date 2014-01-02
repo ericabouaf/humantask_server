@@ -43,12 +43,16 @@ module.exports = [
       apptoken: "xxxxxxx"
     }*/
 
-
     /*,{
         packagePath: './plugins/aws-swf-provider',
+
         domain: 'aws-swf-test-domain',
         taskList: {name: "aws-swf-tasklist" },
-        identity: 'HumanTask server'
+        identity: 'HumanTask server',
+
+        accessKeyId: "xxxxxx",
+        secretAccessKey: "xxxx",
+        region: "us-east-1"
     }*/
 
     // Amazon Mechanical Turk

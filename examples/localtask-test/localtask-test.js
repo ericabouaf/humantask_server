@@ -16,7 +16,7 @@
 if( has_workflow_just_started() ) {
   schedule({
     name: 'step1',
-    activity: 'localtask',
+    activity: 'mutaskhub',
     input: {
         /*
         emailNotification: {
@@ -24,6 +24,11 @@ if( has_workflow_just_started() ) {
             subject: "Ceci est un test !"
         },
         */
+
+        "performer": {
+            "type": "local"
+        },
+
         "data": [{label: "this"},{label: "list"}, {label: "is"}, {label: "templated"}],
         template: "<h1>Label an image</h1>"+
                 "<ul>"+
