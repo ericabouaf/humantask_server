@@ -1,23 +1,68 @@
 # Amazon SimpleWorflow provider
 
-This plugin maps an Amazon SimpleWorkflow Activity to a task.
+This plugin creates an Amazon SimpleWorkflow (SWF) Activity Type which is performed by the MuTask Hub.
 
-Amazon Simple Workflow (SWF) Web Service.
+It allows to integrate human microtasks into any SWF workflow. (LocalTasks, Mechanical Turk, etc...)
 
-
-This configuration must be sent by a SWF decider, encoded in JSON into the activity "input" field (limited to 65k)
-
- * For 'local' tasks, sends results to SWF
-
-
-## SWF Poller
-
- * Polls for new activity tasks, and store them into redis.
- * For 'local' tasks, we send email notifications with the URL of the task.
- * For 'mturk' tasks, we send the task to Mechanical Turk.
 
 
 
 ## Requirements
 
- * AWS account (using Mechanical Turk & Simple Workflow)
+ * an AWS account with SWF permissions.
+
+
+
+## Setup
+
+ * Configure the plugin into your config.js :
+
+````json
+    {
+        packagePath: './plugins/aws-swf-provider',
+        domain: 'aws-swf-test-domain',
+        taskList: {name: "aws-swf-tasklist" },
+        identity: 'MuTask Hub'
+    }
+````
+
+ * Install the dependencies
+
+    $ cd plugins/aws-swf-provider
+    $ npm install
+
+
+
+
+## Important consideration
+
+Human tasks can take a long time... The default SWF timeouts should be disabled :
+
+````json
+    {
+        "defaultTaskHeartbeatTimeout": "NONE",
+        "defaultTaskScheduleToCloseTimeout": "NONE",
+        "defaultTaskScheduleToStartTimeout": "NONE",
+        "defaultTaskStartToCloseTimeout": "NONE",
+    }
+````
+
+
+## Usage
+
+
+When you create the SWF activity, the *'input' field must be encoded in JSON* :
+
+
+````
+{
+ "data": [{"label": "this"},{"label": "list"}, {"label": "is"}, {"label": "templated"}],
+ "template": "HTML for this task. Use mustache templating with the data above.<br> Enter your name: <input name='myname'/><br> <button type='submit' class='btn'>Submit</button>",
+
+ "performer": {
+   "type": "local"
+ }
+
+}
+````
+

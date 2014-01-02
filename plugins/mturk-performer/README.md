@@ -24,7 +24,7 @@ This plugin adds the ability to run tasks on the Amazon Mechanical Turk platform
 
 ## Requirements
 
-* AWS account to use Mechanical Turk 
+* AWS account to use Mechanical Turk
 
 
 ## The Mturk poller
@@ -39,14 +39,3 @@ This plugin adds the ability to run tasks on the Amazon Mechanical Turk platform
 
  * Mturk task are created using an ExternalURL (iframe). The HTTP server must be publicly accessible !
  * Mturk tasks are served, but the results are first sent to Mturk
-
-
- * Watch your SWF Timeouts ! Human tasks can take a long time... If you don't handle timeouts in your SWF workflow, it's best to diable them all :
-
-    {
-       // No timeout
-       heartbeatTimeout: "NONE",
-       scheduleToCloseTimeout: "NONE",
-       scheduleToStartTimeout: "NONE",
-       startToCloseTimeout: "NONE"
-    }
