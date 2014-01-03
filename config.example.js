@@ -44,7 +44,7 @@ module.exports = [
     }*/
 
     /*,{
-        packagePath: './plugins/aws-swf-provider',
+        packagePath: './core/aws-swf-provider',
 
         domain: 'aws-swf-test-domain',
         taskList: {name: "aws-swf-tasklist" },
@@ -57,7 +57,7 @@ module.exports = [
 
     // Amazon Mechanical Turk
     /*,{
-        packagePath: './plugins/mturk-performer',
+        packagePath: './core/mturk-performer',
 
         url: "https://mechanicalturk.sandbox.amazonaws.com",
         accessKeyId: "xxxxxx",

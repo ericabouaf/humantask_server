@@ -3,16 +3,13 @@
  *  BUT requires neyric's branch : https://github.com/neyric/mturk
  */
 
-// TODO: remove the mturk-shortener (unnecessary now with uuid)
-
-
 var mu = require('mu2'),
     fs = require('fs'),
     ejs = require('ejs'),
     async = require('async'),
     querystring = require('querystring');
 
-var log_prefix = "[mturk-performer]";
+var logger_prefix = "[mturk-performer]";
 
 module.exports = function(options, imports, register) {
 
@@ -31,54 +28,37 @@ module.exports = function(options, imports, register) {
 
          logger.info(logger_prefix, "Received new mturk task: ", task.uuid);
 
-         /*redisClient.set(task.uuid, JSON.stringify(task), function(err) {
+         redisClient.set(task.uuid, JSON.stringify(task), function(err) {
             // TODO: err handling
-            redisClient.rpush('open', task.uuid, function(err) {
+            //redisClient.rpush('open', task.uuid, function(err) {
                // TODO: err handling
-               logger.info(logger_prefix, "Saved !", err);
-
-               var taskURL = 'http://'+app.config.host+':'+app.config.port+'/localtask/activity/'+task.uuid;
-               eventbus.emit('taskCreated', task, taskURL);
-            });
-         });*/
+               logger.info(logger_prefix, "Saved in redis !", err);
 
 
-         /*redisClient.set(taskToken, JSON.stringify(config), function(err) {
-           if(err) { cb(err); return; }
+               // Create a HIT
+               var mturkParams = task.performer,
+                   price = new mturk.Price( String(mturkParams.reward), "USD");
 
+               mturk.HITType.create(mturkParams.title, mturkParams.description, price, mturkParams.duration, mturkParams.options, function(err, hitType) {
 
-           // Create a HIT
-            var mturkParams = config.mturk,
-                price = new mturk.Price( String(mturkParams.reward), "USD");
-
-            var mturkShortToken = taskToken.substr(0,200);
-
-            redisClient.hset('mturk-shortener', mturkShortToken, taskToken, function(err, results) {
-
-              mturk.HITType.create(mturkParams.title, mturkParams.description, price, mturkParams.duration, mturkParams.options, function(err, hitType) {
-
-                 if(err) { cb(err); return; }
-
-                 var options = {maxAssignments: mturkParams.maxAssignments || 1},
+                  var options = {maxAssignments: mturkParams.maxAssignments || 1},
                      lifeTimeInSeconds = 3600, // 1 hour
-                     questionXML = externalUrlXml("http://"+_app.config.host+":"+_app.config.port+"/mturk/"+querystring.escape(taskToken), 800);
+                     questionXML = externalUrlXml("http://"+app.config.host+":"+app.config.port+"/mturk/"+task.uuid, 800);
 
-                 mturk.HIT.create(hitType.id, questionXML, lifeTimeInSeconds, {
-                    requesterAnnotation: JSON.stringify({taskToken: mturkShortToken })
-                 }, function(err, hit) {
+                  mturk.HIT.create(hitType.id, questionXML, lifeTimeInSeconds, {
+                     requesterAnnotation: JSON.stringify({uuid: task.uuid})
+                  }, function(err, hit) {
+                     logger.info(logger_prefix, "HIT Created !", err);
+                  });
 
-                    if(err) { cb(err); return; }
-                    cb(null, {hitType: hitType, hit: hit});
-
-                 });
-
-              });
-
-            });
+               });
 
 
+               var taskURL = 'http://'+app.config.host+':'+app.config.port+'/mturk/'+task.uuid;
+               eventbus.emit('taskCreated', task, taskURL);
+            //});
 
-         });*/
+         });
 
       }
    });
@@ -87,8 +67,8 @@ module.exports = function(options, imports, register) {
 
 
    // Get the task from redis
-   function taskFromToken(req, res, next) {
-      redisClient.get( req.param('taskToken') , function(err, task) {
+   function taskFromUuid(req, res, next) {
+      redisClient.get( req.param('uuid') , function(err, task) {
 
          if(!!err || task === null) {
             res.render('error', {
@@ -107,7 +87,7 @@ module.exports = function(options, imports, register) {
    }
 
 
-   app.get('/mturk/:taskToken', taskFromToken, function(req, res) {
+   app.get('/mturk/:uuid', taskFromUuid, function(req, res) {
       var layout = 'mturk_layout.ejs';
 
 
@@ -133,7 +113,7 @@ module.exports = function(options, imports, register) {
                res.set('Content-Type', 'text/html');
                var body = ejs.render(content, {
                   body: str,
-                  taskToken: querystring.escape(req.task.taskToken)
+                  taskToken: req.task.uuid
                });
                res.send(body);
             });
@@ -144,7 +124,7 @@ module.exports = function(options, imports, register) {
          // Render the default task view
          res.render('defaultTaskView', {
             locals: {
-               taskToken: querystring.escape(req.task.taskToken),
+               taskToken: req.task.uuid,
                activityTask: req.task
             }
          });
@@ -156,14 +136,6 @@ module.exports = function(options, imports, register) {
 
    logger.info(logger_prefix, "Start polling Mturk for reviewable HITs.");
 
-
-   var findByShortToken = function(mturkShortToken, cb) {
-      redisClient.hget('mturk-shortener', mturkShortToken, function(err, taskToken) {
-         redisClient.get(taskToken, function(err, task) {
-            cb(err, task, taskToken);
-         });
-      });
-   };
 
    /**
     * HITReviewable handler
@@ -191,23 +163,23 @@ module.exports = function(options, imports, register) {
     */
    function processHit(hit) {
 
-      // TaskToken
-      var mturkShortToken;
-      if(hit.requesterAnnotation && hit.requesterAnnotation.taskToken) {
-         mturkShortToken = hit.requesterAnnotation.taskToken;
+      var uuid;
+
+      if(hit.requesterAnnotation && hit.requesterAnnotation.uuid) {
+         uuid = hit.requesterAnnotation.uuid;
       }
       else {
-         logger.error(logger_prefix, "HIT without taskToken. Ignoring HIT.");
+         logger.error(logger_prefix, "HIT without uuid. Ignoring HIT.");
          return;
       }
 
-      processSwfHit(hit, mturkShortToken);
+      processMuTaskHit(hit, uuid);
    }
 
    /**
-    * Process a valid SWF HIT
+    * Process a valid MuTask HIT
     */
-   function processSwfHit(hit, mturkShortToken) {
+   function processMuTaskHit(hit, uuid) {
 
       var maxAssignments = parseInt(hit.maxAssignments, 10);
 
@@ -230,7 +202,7 @@ module.exports = function(options, imports, register) {
 
          // TODO: fetch ALL assignements if needed !
 
-         completeHit(hit, mturkShortToken, assignments);
+         completeHit(hit, uuid, assignments);
 
      });
 
@@ -240,7 +212,7 @@ module.exports = function(options, imports, register) {
    /**
     * When a HIT is fully completed
     */
-   function completeHit(hit, mturkShortToken, assignments) {
+   function completeHit(hit, uuid, assignments) {
 
       var maxAssignments = parseInt(hit.maxAssignments, 10);
 
@@ -267,7 +239,10 @@ module.exports = function(options, imports, register) {
           * Find the MturkTask object
           */
          logger.info(logger_prefix, "Loading task...");
-         findByShortToken(mturkShortToken, function(err, task, taskToken) {
+
+         redisClient.get( uuid , function(err, taskData) {
+
+            var task = JSON.parse(taskData);
 
             if(!task) {
                logger.warn(logger_prefix, "Task not found ! Disposing HIT...");
@@ -277,29 +252,19 @@ module.exports = function(options, imports, register) {
                return;
             }
 
-            logger.info(logger_prefix, "Got task. Sending results to SWF...");
+            logger.info(logger_prefix, "Got task. Sending results...");
 
-            // Mark task has completed
-            /*swfClient.respondActivityTaskCompleted({
-                 "taskToken": taskToken,
-                 "result": JSON.stringify( results )
-               }, function(err) {
 
-               if(err) {
-                 logger.error(logger_prefix, "SWF respondCompleted failed");
-                 logger.error(logger_prefix, err);
-                 return;
-               }
+            task.results = results;
 
-               logger.info(logger_prefix, "Results sent to SWF ! Disposing HIT...");
 
-               mturk.HIT.dispose(hit.id, function() {
-                  logger.info(logger_prefix, "HIT disposed.");
-               });
+            logger.info(logger_prefix, "Results sent ! Disposing HIT...");
 
-            });*/
+            mturk.HIT.dispose(hit.id, function() {
+               logger.info(logger_prefix, "HIT disposed.");
+            });
 
-            // TODO: swfClient unnecessayr now, emit event instead...
+            eventbus.emit('taskCompleted', uuid, task);
 
          });
 
@@ -308,6 +273,9 @@ module.exports = function(options, imports, register) {
    }
 
 
+   register(null, {
+      "mturk-performer": {}
+   });
 
 };
 

@@ -1,5 +1,5 @@
 {
-    "name": "mturk",
+    "name": "mturk-performer",
     "main": "./mturk.js",
 
     "dependencies": {
@@ -12,6 +12,6 @@
 
     "plugin": {
         "consumes": [ "httpserver", "redis", "eventbus", "logger" ],
-        "provides": [ "mturk" ]
+        "provides": [ "mturk-performer" ]
     }
 }
