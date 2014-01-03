@@ -1,0 +1,27 @@
+<h1>Find the services categories</h1>
+
+<h3>Instructions</h3>
+
+<ul>
+	<li>Visit the following website, and check the box for the services it provides.</li>
+</ul>
+
+
+<h3>Task</h3>
+
+<p>Website to visit: <a href="{{data.url}}" target="_new">{{data.url}}</a></p>
+
+
+
+<br><br><br><br><br>
+
+
+{{#data.categories}}
+<p>
+  <input type="checkbox" name="{{name}}"> {{name}}
+</p>
+{{/data.categories}}
+
+
+
+<button type='submit' class='btn btn-primary' id='submitButton'>Submit</button>

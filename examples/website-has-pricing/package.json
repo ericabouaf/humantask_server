@@ -1,0 +1,5 @@
+{
+   "name" : "website-has-pricing",
+   "private": true,
+   "main" : "./website-has-pricing.js"
+}
