@@ -1,0 +1,34 @@
+
+    subgraph cluster3 {
+
+        label = "Generate an article";
+
+        genArticle [shape=circle,style=filled,label="start"];
+        createNewArticle;
+        publishArticle [label="Publish article\n(automated)"];
+        endArticle [shape=circle,style=filled,label="end"];
+
+        genArticle -> createNewArticle;
+        createNewArticle -> publishArticle [label="illustration"];
+        publishArticle -> postOnTwitter [label="url"];
+        postOnTwitter -> endArticle;
+
+    }
+
+
+    subgraph cluster4 {
+
+        label = "New article";
+
+        newArticle [shape=circle,style=filled,label="start"];
+        improvePageTitles [shape=box3d,label="Improve page title\n(microtasks)"];
+        writeArticle  [shape=box3d,label="Write Article\n(macrotask)"];
+        findIllustrationForArticle [shape=box3d,label="Find Illustration\n(microtasks)"];
+        endNewArticle [shape=circle,style=filled,label="end"];
+
+        newArticle -> improvePageTitles [label="orignal title"];
+        improvePageTitles -> writeArticle [label="article title"];
+        writeArticle -> findIllustrationForArticle [label="content"];
+        findIllustrationForArticle -> endNewArticle;
+
+    }

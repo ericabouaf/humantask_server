@@ -1,0 +1,18 @@
+
+    subgraph clusterContent {
+
+        label = "Create content";
+
+        startContent [shape=circle,style=filled,label="start"];
+        extractPageTitles [shape=box3d,label="Extract page titles/H1\n(automated)"];
+        filterPageTitles [shape=box3d,label="Filter page titles\n(crowdsourcer)"];
+        generateArticles [shape=box3d];
+        endContent [shape=circle,style=filled,label="end"];
+
+        # Create content links
+        startContent -> extractPageTitles [label="similar websites"];
+        extractPageTitles -> filterPageTitles;
+        filterPageTitles -> generateArticles;
+        generateArticles -> generateArticles;
+        generateArticles -> endContent;
+    }

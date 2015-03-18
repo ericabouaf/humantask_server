@@ -1,0 +1,9 @@
+
+
+    subgraph clusterMonetization {
+         label = "Monetization";
+
+         setupAdsenseAccount [label="Setup AdSense Account"];
+         sellAproduct [label="Sell a product"];
+         sellAservice [label="Sell a service"];
+    }

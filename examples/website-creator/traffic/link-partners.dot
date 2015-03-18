@@ -1,0 +1,7 @@
+
+
+    subgraph clusterGenerateTraffic {
+         label = "Generate Traffic";
+
+         linkPartners [label="Link Partners"];
+    }

@@ -1,0 +1,23 @@
+
+    subgraph cluster11 {
+
+        label = "SEO SetUp";
+
+        startSeo [shape=circle,style=filled,label="start"];
+
+        #hosting [shape=box,label="Set-up hosting\n(automated)"];
+        endSeo [shape=circle,style=filled,label="end"];
+
+        searchEngineSubmission [label="Search engine submission"];
+
+        startSeo -> searchEngineSubmission;
+        searchEngineSubmission -> endSeo;
+
+        # Set-up website links
+        startSeo -> createEmailAdress;
+        createEmailAdress -> createTwitterAccount;
+        createEmailAdress -> createFacebookAccount;
+
+        createTwitterAccount -> endSeo;
+        createFacebookAccount -> endSeo;
+    }

@@ -1,0 +1,27 @@
+
+digraph G {
+
+    node[shape="box"];
+
+    subgraph cluster0 {
+
+        #node [style=filled];
+        label = "Website Project";
+
+        # nodes
+        start [shape=circle,style=filled];
+        describeWebsiteProject [label="Describe website project\n(crowdsourcer)"];
+        findSimilarWebsites [shape=box3d,label="Find similar Websites\n(microtasks)"];
+        extractKeywords [shape=box3d,label="Extract Keywords\n(automated)"];
+        evaluateROI [shape=box3d,label="Evaluate ROI\n(macrotask)"];
+        end [shape=circle,style=filled,label="end"];
+
+        # Website creator links
+        start -> describeWebsiteProject;
+        describeWebsiteProject -> findSimilarWebsites [label="website description"];
+        findSimilarWebsites -> extractKeywords [label="similar websites"];
+        extractKeywords -> evaluateROI [label="targeted keywords"];
+        evaluateROI -> end [label="GO/no GO"];
+    }
+
+}
